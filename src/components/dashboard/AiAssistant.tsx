@@ -1,11 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send, X, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/types";
-import { suggestedPrompts } from "@/lib/mocks";
 import { useUser } from "@stackframe/stack";
+
+interface ChatResponse {
+  response: string;
+  suggested_actions?: string[];
+  claim_summary?: Record<string, unknown>;
+}
+
+const renderMarkdown = (text: string) => {
+  let html = text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(
+      /`(.+?)`/g,
+      '<code class="bg-slate-700 px-1 rounded text-green-400">$1</code>'
+    )
+    .replace(
+      /^### (.+)$/gm,
+      '<h3 class="text-base font-bold mt-2 mb-1">$1</h3>'
+    )
+    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-bold mt-2 mb-1">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-2 mb-1">$1</h1>')
+    .replace(/^- (.+)$/gm, '<li class="ml-4">• $1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li class="ml-4">$1</li>')
+    .replace(/\n/g, "<br/>");
+  return html;
+};
 
 export default function AiAssistant() {
   const user = useUser();
@@ -21,6 +46,28 @@ export default function AiAssistant() {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [suggestedActions, setSuggestedActions] = useState<string[]>([]);
+
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPosition({
+        x: window.innerWidth - 460,
+        y: window.innerHeight - 650,
+      });
+    }
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -66,7 +113,7 @@ export default function AiAssistant() {
         throw new Error("Failed to get response");
       }
 
-      const data = await response.json();
+      const data: ChatResponse = await response.json();
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -76,6 +123,10 @@ export default function AiAssistant() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      if (data.suggested_actions && data.suggested_actions.length > 0) {
+        setSuggestedActions(data.suggested_actions);
+      }
     } catch (error) {
       console.error("Chat error:", error);
       const errorMessage: ChatMessage = {
@@ -97,17 +148,22 @@ export default function AiAssistant() {
 
   return (
     <>
-      <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-green-600 hover:bg-green-700 shadow-lg z-[9999]"
-        size="icon"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-green-600 hover:bg-green-700 shadow-lg z-[9999]"
+          size="icon"
+        >
+          <MessageCircle className="h-7 w-7" />
+        </Button>
+      )}
 
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-[9999] overflow-hidden">
-          <div className="bg-green-600 p-4 flex items-center justify-between">
+        <div
+          ref={chatRef}
+          className="fixed top-4 right-4 bottom-4 w-[45vw] min-w-[350px] max-w-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-[9999] overflow-hidden"
+        >
+          <div className="bg-green-600 p-4 flex items-center justify-between select-none">
             <div className="flex items-center gap-2">
               <Bot className="h-6 w-6 text-white" />
               <div>
@@ -125,6 +181,27 @@ export default function AiAssistant() {
             </Button>
           </div>
 
+          {suggestedActions.length > 0 && (
+            <div className="px-3 py-2 bg-slate-800/80 border-b border-slate-700">
+              <p className="text-xs text-slate-400 mb-1.5">Acțiuni sugerate:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedActions.map((action, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setInput(action);
+                      setSuggestedActions([]);
+                    }}
+                    className="text-xs bg-green-600/20 text-green-400 px-2.5 py-1 rounded-full hover:bg-green-600/30 flex items-center gap-1 border border-green-600/30"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    {action}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((message) => (
               <div
@@ -134,16 +211,26 @@ export default function AiAssistant() {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${
                     message.role === "user"
                       ? "bg-green-600 text-white rounded-br-md"
                       : "bg-slate-800 text-slate-200 rounded-bl-md"
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  {message.role === "assistant" ? (
+                    <div
+                      className="text-sm prose prose-invert prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: renderMarkdown(message.content),
+                      }}
+                    />
+                  ) : (
+                    <p className="text-sm">{message.content}</p>
+                  )}
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
 
             {isTyping && (
               <div className="flex justify-start">
@@ -168,19 +255,6 @@ export default function AiAssistant() {
           </div>
 
           <div className="p-3 border-t border-slate-700">
-            <div className="flex flex-wrap gap-1 mb-2">
-              {suggestedPrompts.slice(0, 2).map((prompt, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSuggestedPrompt(prompt)}
-                  className="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded-full hover:bg-slate-700 flex items-center gap-1"
-                >
-                  <Sparkles className="h-3 w-3" />
-                  {prompt.slice(0, 25)}...
-                </button>
-              ))}
-            </div>
-
             <div className="flex gap-2">
               <input
                 type="text"
