@@ -65,7 +65,7 @@ function useCountUp(end: number, duration: number = 2000) {
   return { count, ref };
 }
 
-const EXPECTED_API_URL = 'https://snow-rendering-many-scientific.trycloudflare.com';
+const EXPECTED_API_URL = 'https://jay-ebook-pamela-alexandria.trycloudflare.com/';
 
 export default function HeroSection() {
   const user = useUser();
@@ -165,7 +165,7 @@ export default function HeroSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-slate-600 text-slate-500 hover:bg-slate-800 hover:text-slate-300 text-lg px-8 py-6"
+                className="border-slate-600 text-black hover:bg-slate-700 text-lg px-8 py-6"
               >
                 Află Mai Multe
               </Button>
