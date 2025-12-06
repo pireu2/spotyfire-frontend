@@ -17,17 +17,7 @@ export default function SubscribePage() {
 
       <Navbar />
 
-      <div className="relative z-10 container mx-auto px-6 pt-28 pb-20">
-        <Link href="/">
-          <Button variant="ghost" className="text-slate-400 hover:text-white mb-8">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Înapoi la pagina principală
-          </Button>
-        </Link>
-        
-        <h1 className="text-4xl md:text-5xl font-bold text-center text-white mb-12">
-          Alege Planul Potrivit
-        </h1>
+      <div className="relative z-10 container mx-auto px-6 pt-40 pb-20">
 
         <SubscriptionContent />
       </div>

@@ -73,8 +73,7 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
-        <div className="p-4 border-b border-slate-700 flex justify-center">
+
       <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-20">
         <div className="p-4 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
@@ -148,15 +147,6 @@ export default function DashboardLayout({
               >
                 <CreditCard className="h-5 w-5" />
                 Abonează-te
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="#"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
-              >
-                <Settings className="h-5 w-5" />
-                Setări
               </Link>
             </li>
           </ul>
@@ -241,4 +231,4 @@ export default function DashboardLayout({
       </main>
     </div >
   );
-}
+};
