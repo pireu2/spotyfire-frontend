@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreatePropertyRequest } from "@/types";
-import { createProperty } from "@/lib/api";
+import { createProperty, API_URL } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
 import dynamic from "next/dynamic";
 import PricingModal from "@/components/payment/PricingModal";
@@ -178,9 +178,7 @@ export default function AddTerrainPanel({
         .then((auth) => auth?.accessToken);
 
       const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-        }/api/properties/cadastral-lookup`,
+        `${API_URL}/api/properties/cadastral-lookup`,
         {
           method: "POST",
           headers: {
@@ -328,11 +326,10 @@ export default function AddTerrainPanel({
               setArea(0);
               setCenter(null);
             }}
-            className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
-              inputMode === "cadastral"
+            className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${inputMode === "cadastral"
                 ? "text-green-500 border-b-2 border-green-500 bg-green-500/10"
                 : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-            }`}
+              }`}
           >
             <Building2 className="h-3.5 w-3.5" />
             Nr. Cadastral
@@ -344,11 +341,10 @@ export default function AddTerrainPanel({
               setError(null);
               resetCadastral();
             }}
-            className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
-              inputMode === "draw"
+            className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${inputMode === "draw"
                 ? "text-green-500 border-b-2 border-green-500 bg-green-500/10"
                 : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-            }`}
+              }`}
           >
             <MapPin className="h-3.5 w-3.5" />
             Desenare Hartă

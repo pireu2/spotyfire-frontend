@@ -1,6 +1,6 @@
 import { Property, CreatePropertyRequest, UpdatePropertyRequest } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 export async function getProperties(accessToken?: string): Promise<Property[]> {
   const response = await fetch(`${API_URL}/api/properties`, {
@@ -9,11 +9,11 @@ export async function getProperties(accessToken?: string): Promise<Property[]> {
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     },
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch properties');
   }
-  
+
   return response.json();
 }
 
@@ -24,11 +24,11 @@ export async function getProperty(propertyId: string, accessToken?: string): Pro
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     },
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch property');
   }
-  
+
   return response.json();
 }
 
@@ -41,11 +41,11 @@ export async function createProperty(data: CreatePropertyRequest, accessToken?: 
     },
     body: JSON.stringify(data),
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to create property');
   }
-  
+
   return response.json();
 }
 
@@ -58,11 +58,11 @@ export async function updateProperty(propertyId: string, data: UpdatePropertyReq
     },
     body: JSON.stringify(data),
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to update property');
   }
-  
+
   return response.json();
 }
 
@@ -74,7 +74,7 @@ export async function deleteProperty(propertyId: string, accessToken?: string): 
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     },
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to delete property');
   }

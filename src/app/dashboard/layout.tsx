@@ -8,12 +8,13 @@ import {
   Map,
   Bell,
   FileText,
-  Settings,
+
   Satellite,
   Wifi,
   LogOut,
   MapPin,
   Home,
+  Settings,
 } from "lucide-react";
 import { useUser } from "@stackframe/stack";
 import { useState } from "react";
@@ -78,8 +79,9 @@ export default function DashboardLayout({
             <Image
               src="/spotyfire-logo-full.png"
               alt="SpotyFire"
-              width={180}
-              height={45}
+              width={0}
+              height={0}
+              sizes="100vw"
               className="h-12 w-auto"
             />
           </Link>
@@ -90,11 +92,10 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard"
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/dashboard"
-                    ? "bg-green-600/20 text-green-500 font-medium"
-                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${pathname === "/dashboard"
+                  ? "bg-green-600/20 text-green-500 font-medium"
+                  : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                  }`}
               >
                 <Map className="h-5 w-5" />
                 Hartă Live
@@ -103,11 +104,10 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard/terenuri"
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/dashboard/terenuri"
-                    ? "bg-green-600/20 text-green-500 font-medium"
-                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${pathname === "/dashboard/terenuri"
+                  ? "bg-green-600/20 text-green-500 font-medium"
+                  : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                  }`}
               >
                 <MapPin className="h-5 w-5" />
                 Terenuri
@@ -137,15 +137,6 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="#"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
-              >
-                <Settings className="h-5 w-5" />
-                Setări
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/payment"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   pathname === "/payment"
@@ -167,7 +158,7 @@ export default function DashboardLayout({
               </Link>
             </li>
           </ul>
-        </nav>
+        </nav >
 
         <div className="p-4 border-t border-slate-700">
           <div className="bg-slate-700/50 rounded-lg p-3">
@@ -186,10 +177,10 @@ export default function DashboardLayout({
             </div>
           </div>
         </div>
-      </aside>
+      </aside >
 
       <main className="flex-1 flex flex-col relative z-10">
-        <header className="h-16 bg-slate-800/50 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6">
+        <header className="h-16 bg-slate-800/50 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-50">
           <div>
             <h1 className="text-lg font-semibold text-white">
               Dashboard Monitorizare
@@ -244,6 +235,6 @@ export default function DashboardLayout({
 
         <div className="flex-1 overflow-auto"><ReportsProvider>{children}</ReportsProvider></div>
       </main>
-    </div>
+    </div >
   );
 }

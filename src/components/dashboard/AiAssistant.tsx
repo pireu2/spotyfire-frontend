@@ -5,6 +5,7 @@ import { MessageCircle, Send, X, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/types";
 import { useUser } from "@stackframe/stack";
+import { API_URL } from "@/lib/api";
 
 interface ChatResponse {
   response: string;
@@ -89,9 +90,7 @@ export default function AiAssistant() {
         .then((auth) => auth?.accessToken);
 
       const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-        }/api/chat`,
+        `${API_URL}/api/chat`,
         {
           method: "POST",
           headers: {
@@ -206,16 +205,14 @@ export default function AiAssistant() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${
-                    message.role === "user"
+                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${message.role === "user"
                       ? "bg-green-600 text-white rounded-br-md"
                       : "bg-slate-800 text-slate-200 rounded-bl-md"
-                  }`}
+                    }`}
                 >
                   {message.role === "assistant" ? (
                     <div

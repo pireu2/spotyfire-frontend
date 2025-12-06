@@ -53,7 +53,7 @@ export default function Navbar() {
 
       {(showSignUp || showSignIn) && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border border-slate-700">
+          <div className="bg-slate-800 rounded-2xl py-6 px-10 max-w-md w-full max-h-[90vh] overflow-y-auto relative border border-slate-700 text-white [&_input]:text-black [&_button]:text-current">
             <button
               onClick={() => {
                 setShowSignUp(false);
@@ -101,12 +101,12 @@ export default function Navbar() {
                 >
                   Despre Noi
                 </Link>
-                <a
-                  href="#aboneaza-te"
+                <Link
+                  href="/aboneaza-te"
                   className="text-slate-300 hover:text-white transition-colors"
                 >
                   Abonează-te
-                </a>
+                </Link>
               </div>
             </div>
 
