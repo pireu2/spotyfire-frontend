@@ -18,6 +18,7 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
+  existingPolygons?: [number, number][][][];
 }
 
 export type { PolygonDrawMapProps };
@@ -96,6 +97,7 @@ function MapClickHandler({
 export default function PolygonDrawMap({
   onPolygonChange,
   initialPolygon,
+  existingPolygons = [],
 }: PolygonDrawMapProps) {
   const [coordinates, setCoordinates] = useState<
     { lat: number; lng: number }[]
@@ -147,6 +149,28 @@ export default function PolygonDrawMap({
         setCoordinates={setCoordinates}
         onPolygonChange={onPolygonChange}
       />
+
+      {/* Existing Polygons Layer */}
+      {existingPolygons.map((polygonCoords, index) => {
+        // Validation: Ensure we have at least one ring with points
+        if (!polygonCoords || !Array.isArray(polygonCoords) || polygonCoords.length === 0 || !polygonCoords[0] || polygonCoords[0].length === 0) {
+          return null;
+        }
+
+        return (
+          <Polygon
+            key={`existing-${index}`}
+            positions={polygonCoords as any}
+            pathOptions={{
+              color: "#059669", // Green (matches "Sănătos" status)
+              fillColor: "#059669",
+              fillOpacity: 0.4,
+              weight: 3,
+              interactive: false,
+            }}
+          />
+        );
+      })}
 
       {coordinates.length >= 3 && (
         <Polygon

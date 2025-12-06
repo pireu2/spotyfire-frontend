@@ -128,6 +128,7 @@ export default function TerenuriPage() {
         <AddTerrainPanel
           onClose={() => setShowAddPanel(false)}
           onSuccess={handleAddSuccess}
+          existingProperties={properties}
         />
       ) : (
         <div className="flex-1 p-6 overflow-y-auto">

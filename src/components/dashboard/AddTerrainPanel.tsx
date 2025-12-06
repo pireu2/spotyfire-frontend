@@ -12,7 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CreatePropertyRequest } from "@/types";
+import { CreatePropertyRequest, Property } from "@/types";
 import { createProperty, API_URL } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
 import dynamic from "next/dynamic";
@@ -25,7 +25,7 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
-  mapKey?: number;
+  existingPolygons?: [number, number][][][];
 }
 
 const PolygonDrawMap = dynamic<PolygonDrawMapProps>(
@@ -54,6 +54,7 @@ interface CadastralData {
 interface AddTerrainPanelProps {
   onClose: () => void;
   onSuccess: () => void;
+  existingProperties?: Property[];
 }
 
 const CROP_TYPES = [
@@ -84,6 +85,7 @@ type InputMode = "cadastral" | "draw";
 export default function AddTerrainPanel({
   onClose,
   onSuccess,
+  existingProperties = [],
 }: AddTerrainPanelProps) {
   const user = useUser();
   const [isLoading, setIsLoading] = useState(false);
@@ -575,6 +577,7 @@ export default function AddTerrainPanel({
         <PolygonDrawMap
           onPolygonChange={handlePolygonChange}
           initialPolygon={cadastralFetched ? coordinates : undefined}
+          existingPolygons={existingProperties.map((p) => p.geometry.coordinates)}
         />
         {inputMode === "cadastral" && !cadastralFetched && (
           <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
