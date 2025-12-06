@@ -16,8 +16,65 @@ import {
   Globe
 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+
+function useCountUp(end: number, duration: number = 2000) {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasStarted) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasStarted]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    let startTime: number;
+    let animationFrame: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * end));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [hasStarted, end, duration]);
+
+  return { count, ref };
+}
 
 export default function DesprePage() {
+  const worstCaseMin = useCountUp(300, 2000);
+  const worstCaseMax = useCountUp(400, 2000);
+  const floodMin = useCountUp(70, 2000);
+  const floodMax = useCountUp(100, 2000);
+  const fireMin = useCountUp(15, 2000);
+  const fireMax = useCountUp(20, 2000);
+  const externalMin = useCountUp(80, 2000);
+  const externalMax = useCountUp(120, 2000);
+  const totalMin = useCountUp(165, 2000);
+  const totalMax = useCountUp(240, 2000);
+
   return (
     <div className="relative min-h-screen bg-slate-900 overflow-hidden font-sans">
       <div className="fixed inset-0 bg-slate-950" />
@@ -67,7 +124,7 @@ export default function DesprePage() {
               <div className="absolute inset-0 bg-red-600/5 group-hover:bg-red-600/10 transition-colors" />
               <h3 className="text-red-400 font-bold tracking-widest uppercase mb-2 relative z-10">Worst Case Scenario</h3>
               <div className="text-5xl md:text-5xl font-black text-white mb-2 relative z-10">
-                300-400 <span className="text-2xl font-bold text-red-500">MLN €</span>
+                <span ref={worstCaseMin.ref}>{worstCaseMin.count}</span>-<span ref={worstCaseMax.ref}>{worstCaseMax.count}</span> <span className="text-2xl font-bold text-red-500">MLN €</span>
               </div>
             </div>
 
@@ -76,7 +133,9 @@ export default function DesprePage() {
               <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CloudRain className="w-8 h-8 text-blue-400" />
               </div>
-              <div className="text-3xl font-bold text-white mb-1">70-100</div>
+              <div className="text-3xl font-bold text-white mb-1">
+                <span ref={floodMin.ref}>{floodMin.count}</span>-<span ref={floodMax.ref}>{floodMax.count}</span>
+              </div>
               <div className="text-blue-400 font-bold text-sm mb-4">MILIOANE €</div>
               <p className="text-slate-400 text-sm">Pagube cauzate de inundații (2020-2023)</p>
             </div>
@@ -86,7 +145,9 @@ export default function DesprePage() {
               <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Flame className="w-8 h-8 text-orange-400" />
               </div>
-              <div className="text-3xl font-bold text-white mb-1">15-20</div>
+              <div className="text-3xl font-bold text-white mb-1">
+                <span ref={fireMin.ref}>{fireMin.count}</span>-<span ref={fireMax.ref}>{fireMax.count}</span>
+              </div>
               <div className="text-orange-400 font-bold text-sm mb-4">MILIOANE €</div>
               <p className="text-slate-400 text-sm">Pagube anuale cauzate de incendii</p>
             </div>
@@ -96,7 +157,9 @@ export default function DesprePage() {
               <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle className="w-8 h-8 text-purple-400" />
               </div>
-              <div className="text-3xl font-bold text-white mb-1">80-120</div>
+              <div className="text-3xl font-bold text-white mb-1">
+                <span ref={externalMin.ref}>{externalMin.count}</span>-<span ref={externalMax.ref}>{externalMax.count}</span>
+              </div>
               <div className="text-purple-400 font-bold text-sm mb-4">MILIOANE €</div>
               <p className="text-slate-400 text-sm">Pagube cauzate de alte fenomene externe</p>
             </div>
@@ -104,7 +167,9 @@ export default function DesprePage() {
             {/* Total */}
             <div className="bg-slate-800/80 border border-slate-600 p-8 rounded-3xl text-center flex flex-col justify-center hover:scale-[1.02] transition-transform">
               <h3 className="text-slate-200 font-bold uppercase mb-2">Total Mediu</h3>
-              <div className="text-4xl font-black text-white mb-1">165-240</div>
+              <div className="text-4xl font-black text-white mb-1">
+                <span ref={totalMin.ref}>{totalMin.count}</span>-<span ref={totalMax.ref}>{totalMax.count}</span>
+              </div>
               <div className="text-slate-400 font-bold text-sm">MILIOANE €</div>
             </div>
           </div>
