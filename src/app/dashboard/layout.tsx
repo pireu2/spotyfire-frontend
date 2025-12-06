@@ -73,7 +73,7 @@ export default function DashboardLayout({
       )}
 
       <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-20">
-        <div className="p-4 border-b border-slate-700">
+        <div className="p-4 h-20 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/spotyfire-logo-full.png"
@@ -185,7 +185,7 @@ export default function DashboardLayout({
       </aside>
 
       <main className="flex-1 flex flex-col relative z-10">
-        <header className="h-16 bg-slate-800/50 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-50">
+        <header className="h-20 bg-slate-800/50 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-50">
           <div>
             <h1 className="text-lg font-semibold text-white">
               Dashboard Monitorizare
