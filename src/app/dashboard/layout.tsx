@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Shield,
-  Home,
   Map,
   Bell,
   FileText,
@@ -11,6 +11,8 @@ import {
   Satellite,
   Wifi,
   LogOut,
+  MapPin,
+  Home,
 } from "lucide-react";
 import { useUser } from "@stackframe/stack";
 import { useState } from "react";
@@ -22,6 +24,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = useUser();
+  const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
@@ -37,7 +40,7 @@ export default function DashboardLayout({
       <div className="absolute inset-0 bg-grid-pattern" />
       <div className="absolute inset-0 bg-noise pointer-events-none" />
       {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-9999 flex items-center justify-center p-4">
           <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700">
             <h3 className="text-xl font-semibold text-white mb-4 text-center">
               Confirmare Deconectare
@@ -77,10 +80,27 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-green-600/20 text-green-500 font-medium"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "/dashboard"
+                    ? "bg-green-600/20 text-green-500 font-medium"
+                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                }`}
               >
                 <Map className="h-5 w-5" />
                 Hartă Live
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/dashboard/terenuri"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "/dashboard/terenuri"
+                    ? "bg-green-600/20 text-green-500 font-medium"
+                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                }`}
+              >
+                <MapPin className="h-5 w-5" />
+                Terenuri
               </Link>
             </li>
             <li>

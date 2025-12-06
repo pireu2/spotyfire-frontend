@@ -29,7 +29,7 @@ export default function MapLayers({ onLayerChange }: MapLayersProps) {
   };
 
   return (
-    <div className="absolute top-4 right-4 z-[1000]">
+    <div className="absolute top-4 right-4 z-1000">
       <Button
         variant="outline"
         size="icon"

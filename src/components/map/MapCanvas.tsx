@@ -46,7 +46,7 @@ export default function MapCanvas({ parcels }: MapCanvasProps) {
     <MapContainer
       center={[45.9432, 24.9668]}
       zoom={7}
-      minZoom={6}
+      minZoom={7}
       maxZoom={18}
       maxBounds={romaniaBounds}
       maxBoundsViscosity={1.0}
