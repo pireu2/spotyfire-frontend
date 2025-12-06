@@ -537,7 +537,7 @@ export default function AddTerrainPanel({
               {estimatedValue.toLocaleString()} €
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              Calculat la {pricePerHa.toLocaleString()} €/ha
+              Calcul: {pricePerHa}€ x {area.toFixed(2)} ha
             </p>
           </div>
 
