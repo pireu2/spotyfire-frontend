@@ -65,8 +65,6 @@ function useCountUp(end: number, duration: number = 2000) {
   return { count, ref };
 }
 
-const EXPECTED_API_URL = 'https://jay-ebook-pamela-alexandria.trycloudflare.com/';
-
 export default function HeroSection() {
   const user = useUser();
   const [email, setEmail] = useState("");
