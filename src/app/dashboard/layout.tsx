@@ -31,7 +31,11 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-slate-900 flex relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900/40 via-slate-900 to-slate-950" />
+      <div className="absolute inset-0 bg-green-glow" />
+      <div className="absolute inset-0 bg-grid-pattern" />
+      <div className="absolute inset-0 bg-noise pointer-events-none" />
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700">
@@ -60,7 +64,7 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
+      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
         <div className="p-4 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-green-500" />
@@ -134,7 +138,7 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col relative z-10">
         <header className="h-16 bg-slate-800/50 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6">
           <div>
             <h1 className="text-lg font-semibold text-white">
