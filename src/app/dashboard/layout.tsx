@@ -73,6 +73,8 @@ export default function DashboardLayout({
         </div>
       )}
 
+      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
+        <div className="p-4 border-b border-slate-700 flex justify-center">
       <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-20">
         <div className="p-4 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
