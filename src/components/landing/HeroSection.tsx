@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Shield,
@@ -7,14 +9,88 @@ import {
   Flame,
   Droplets,
   Leaf,
+  UserPlus,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SignUp, SignIn, useUser } from "@stackframe/stack";
+import { useState } from "react";
 
 export default function HeroSection() {
+  const user = useUser();
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = async () => {
+    await user?.signOut();
+    setShowLogoutConfirm(false);
+    window.location.reload();
+  };
+
   return (
     <div className="relative min-h-screen bg-slate-900 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-slate-900 to-slate-900" />
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
+
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700">
+            <h3 className="text-xl font-semibold text-white mb-4 text-center">
+              Confirmare Deconectare
+            </h3>
+            <p className="text-slate-400 text-center mb-6">
+              Ești sigur că vrei să te deconectezi?
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button
+                variant="outline"
+                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Nu
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                onClick={handleLogout}
+              >
+                Da, Deconectează-mă
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(showSignUp || showSignIn) && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border border-slate-700">
+            <button
+              onClick={() => {
+                setShowSignUp(false);
+                setShowSignIn(false);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl"
+            >
+              ×
+            </button>
+            {showSignUp && (
+              <SignUp
+                firstTab="password"
+                extraInfo={
+                  <p className="text-slate-400 text-xs text-center mt-2">
+                    Prin înregistrare, accepți{" "}
+                    <a href="/terms" className="text-green-500 hover:underline">
+                      Termenii și Condițiile
+                    </a>
+                  </p>
+                }
+              />
+            )}
+            {showSignIn && <SignIn firstTab="password" />}
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10 container mx-auto px-6 py-20">
         <nav className="flex items-center justify-between mb-20">
@@ -22,14 +98,46 @@ export default function HeroSection() {
             <Shield className="h-8 w-8 text-green-500" />
             <span className="text-2xl font-bold text-white">SpotyFire</span>
           </div>
-          <Link href="/dashboard">
-            <Button
-              variant="outline"
-              className="border-green-600 text-green-500 hover:bg-green-600 hover:text-white"
-            >
-              Intră în Aplicație
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <>
+                <span className="text-slate-400 text-sm hidden sm:block">
+                  {user.primaryEmail}
+                </span>
+                <Link href="/dashboard">
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    Dashboard
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  className="text-slate-300 hover:text-white hover:bg-red-600/20"
+                  onClick={() => setShowLogoutConfirm(true)}
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  onClick={() => setShowSignIn(true)}
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Autentificare
+                </Button>
+                <Button
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => setShowSignUp(true)}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Înregistrare
+                </Button>
+              </>
+            )}
+          </div>
         </nav>
 
         <div className="max-w-4xl mx-auto text-center">
@@ -55,15 +163,26 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
-            <Link href="/dashboard">
+            {user ? (
+              <Link href="/dashboard">
+                <Button
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700 text-lg px-8 py-6"
+                >
+                  Lansează Dashboard
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            ) : (
               <Button
                 size="lg"
                 className="bg-green-600 hover:bg-green-700 text-lg px-8 py-6"
+                onClick={() => setShowSignUp(true)}
               >
-                Lansează Dashboard
+                Începe Acum - Gratuit
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </Link>
+            )}
             <Button
               variant="outline"
               size="lg"
