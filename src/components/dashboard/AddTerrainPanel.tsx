@@ -58,19 +58,30 @@ interface AddTerrainPanelProps {
 }
 
 const CROP_TYPES = [
-  { value: "grau", label: "Grâu" },
-  { value: "porumb", label: "Porumb" },
-  { value: "floarea_soarelui", label: "Floarea Soarelui" },
-  { value: "rapita", label: "Rapiță" },
-  { value: "orz", label: "Orz" },
-  { value: "soia", label: "Soia" },
-  { value: "vie", label: "Vie" },
-  { value: "livada", label: "Livadă" },
-  { value: "legume", label: "Legume" },
-  { value: "altele", label: "Altele" },
+  { value: "grau", label: "Grâu - 48€/ha" },
+  { value: "porumb", label: "Porumb - 6.5€/ha" },
+  { value: "floarea_soarelui", label: "Floarea Soarelui - 90€/ha" },
+  { value: "rapita", label: "Rapiță - 140€/ha" },
+  { value: "orz", label: "Orz - 90€/ha" },
+  { value: "soia", label: "Soia - 150€/ha" },
+  { value: "vie", label: "Vie - 120€/ha" },
+  { value: "livada", label: "Livadă - 100€/ha" },
+  { value: "legume", label: "Legume - 150€/ha" },
+  { value: "altele", label: "Altele - 100€/ha" },
 ];
 
-const PRICE_PER_HA = 5000;
+const CROP_PRICES: Record<string, number> = {
+  grau: 48,
+  porumb: 6.5,
+  floarea_soarelui: 90,
+  rapita: 140,
+  orz: 90,
+  soia: 150,
+  vie: 120,
+  livada: 100,
+  legume: 150,
+  altele: 100,
+};
 
 const LOADING_MESSAGES = [
   "Se conectează la ANCPI...",
@@ -78,6 +89,7 @@ const LOADING_MESSAGES = [
   "Se preiau datele geometrice...",
   "Se procesează coordonatele...",
   "Se finalizează preluarea datelor...",
+  "Se optimizează datele...",
 ];
 
 type InputMode = "cadastral" | "draw";
@@ -110,7 +122,8 @@ export default function AddTerrainPanel({
     null
   );
 
-  const estimatedValue = area * PRICE_PER_HA;
+  const pricePerHa = CROP_PRICES[cropType] || 1000;
+  const estimatedValue = area * pricePerHa;
 
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [pendingRequestData, setPendingRequestData] =
@@ -524,7 +537,7 @@ export default function AddTerrainPanel({
               {estimatedValue.toLocaleString()} €
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              Calculat la {PRICE_PER_HA.toLocaleString()} €/ha
+              Calculat la {pricePerHa.toLocaleString()} €/ha
             </p>
           </div>
 

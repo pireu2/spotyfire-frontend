@@ -81,7 +81,7 @@ export default function Navbar() {
         </div>
       )}
 
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
+      <nav className="fixed top-0 left-0 right-0 z-[5000] bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
@@ -127,10 +127,10 @@ export default function Navbar() {
                       <User className="h-5 w-5 text-green-600" />
                     </button>
                     <div
-                      className={`fixed inset-0 z-40 transition-opacity duration-200 ${showProfileMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                      className={`fixed inset-0 z-[5000] transition-opacity duration-200 ${showProfileMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                       onClick={() => setShowProfileMenu(false)}
                     />
-                    <div className={`absolute right-0 top-12 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-50 overflow-hidden transition-all duration-200 origin-top-right ${showProfileMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                    <div className={`absolute right-0 top-12 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-[5001] overflow-hidden transition-all duration-200 origin-top-right ${showProfileMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                       <div className="p-4 border-b border-slate-700">
                         <p className="text-white font-medium">
                           Bună, {user.displayName || "Utilizator"}

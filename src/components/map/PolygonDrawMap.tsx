@@ -129,80 +129,90 @@ export default function PolygonDrawMap({
   ];
 
   return (
-    <MapContainer
-      center={[45.9432, 24.9668]}
-      zoom={7}
-      minZoom={7}
-      maxZoom={18}
-      maxBounds={romaniaBounds}
-      maxBoundsViscosity={1.0}
-      className="h-full w-full"
-      style={{ background: "#1e293b" }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <div className="h-full w-full relative">
+      <MapContainer
+        center={[45.9432, 24.9668]}
+        zoom={7}
+        minZoom={7}
+        maxZoom={18}
+        maxBounds={romaniaBounds}
+        maxBoundsViscosity={1.0}
+        className="h-full w-full"
+        style={{ background: "#1e293b" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-      <MapClickHandler
-        coordinates={coordinates}
-        setCoordinates={setCoordinates}
-        onPolygonChange={onPolygonChange}
-      />
+        <MapClickHandler
+          coordinates={coordinates}
+          setCoordinates={setCoordinates}
+          onPolygonChange={onPolygonChange}
+        />
 
-      {/* Existing Polygons Layer */}
-      {existingPolygons.map((polygonCoords, index) => {
-        // Validation: Ensure we have at least one ring with points
-        if (!polygonCoords || !Array.isArray(polygonCoords) || polygonCoords.length === 0 || !polygonCoords[0] || polygonCoords[0].length === 0) {
-          return null;
-        }
+        {/* Existing Polygons Layer */}
+        {existingPolygons.map((polygonCoords, index) => {
+          // Validation: Ensure we have at least one ring with points
+          if (
+            !polygonCoords ||
+            !Array.isArray(polygonCoords) ||
+            polygonCoords.length === 0 ||
+            !polygonCoords[0] ||
+            polygonCoords[0].length === 0
+          ) {
+            return null;
+          }
 
-        return (
+          return (
+            <Polygon
+              key={`existing-${index}`}
+              positions={polygonCoords as any}
+              pathOptions={{
+                color: "#059669", // Green (matches "Sănătos" status)
+                fillColor: "#059669",
+                fillOpacity: 0.4,
+                weight: 3,
+                interactive: false,
+              }}
+            />
+          );
+        })}
+
+        {coordinates.length >= 3 && (
           <Polygon
-            key={`existing-${index}`}
-            positions={polygonCoords as any}
+            positions={coordinates.map(
+              (c) => [c.lat, c.lng] as [number, number]
+            )}
             pathOptions={{
-              color: "#059669", // Green (matches "Sănătos" status)
-              fillColor: "#059669",
-              fillOpacity: 0.4,
-              weight: 3,
-              interactive: false,
+              color: "#10b981",
+              fillColor: "#10b981",
+              fillOpacity: 0.3,
+              weight: 2,
             }}
           />
-        );
-      })}
+        )}
 
-      {coordinates.length >= 3 && (
-        <Polygon
-          positions={coordinates.map((c) => [c.lat, c.lng] as [number, number])}
-          pathOptions={{
-            color: "#10b981",
-            fillColor: "#10b981",
-            fillOpacity: 0.3,
-            weight: 2,
-          }}
-        />
-      )}
-
-      {coordinates.map((coord, index) => (
-        <Marker
-          key={index}
-          position={[coord.lat, coord.lng]}
-          icon={markerIcon}
-          eventHandlers={{
-            click: () => handleMarkerClick(index),
-          }}
-        />
-      ))}
+        {coordinates.map((coord, index) => (
+          <Marker
+            key={index}
+            position={[coord.lat, coord.lng]}
+            icon={markerIcon}
+            eventHandlers={{
+              click: () => handleMarkerClick(index),
+            }}
+          />
+        ))}
+      </MapContainer>
 
       {coordinates.length > 0 && coordinates.length < 3 && (
-        <div className="absolute bottom-4 left-4 z-1000 bg-orange-500/20 backdrop-blur px-3 py-2 rounded-lg border border-orange-500/50">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-orange-500/20 backdrop-blur px-3 py-2 rounded-lg border border-orange-500/50 pointer-events-none">
           <p className="text-xs text-orange-400">
             Mai ai nevoie de {3 - coordinates.length} punct
             {coordinates.length === 2 ? "" : "e"}
           </p>
         </div>
       )}
-    </MapContainer>
+    </div>
   );
 }
