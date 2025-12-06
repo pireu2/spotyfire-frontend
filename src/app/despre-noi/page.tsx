@@ -66,7 +66,7 @@ export default function DesprePage() {
             <div className="lg:col-span-4 bg-gradient-to-r from-red-900/40 to-slate-900/40 border border-red-500/30 p-8 rounded-3xl text-center mb-8 relative overflow-hidden group">
               <div className="absolute inset-0 bg-red-600/5 group-hover:bg-red-600/10 transition-colors" />
               <h3 className="text-red-400 font-bold tracking-widest uppercase mb-2 relative z-10">Worst Case Scenario</h3>
-              <div className="text-5xl md:text-7xl font-black text-white mb-2 relative z-10">
+              <div className="text-5xl md:text-5xl font-black text-white mb-2 relative z-10">
                 300-400 <span className="text-2xl font-bold text-red-500">MLN €</span>
               </div>
             </div>
