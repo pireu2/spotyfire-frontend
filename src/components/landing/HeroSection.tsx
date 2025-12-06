@@ -71,6 +71,7 @@ export default function HeroSection() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
+  const [showSignUp, setShowSignUp] = useState(false);
 
   const fires = useCountUp(130, 2000);
   const floods = useCountUp(100, 2000);

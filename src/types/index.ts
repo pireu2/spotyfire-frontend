@@ -53,7 +53,7 @@ export interface UpdatePropertyRequest {
 
 export interface Alert {
   id: string;
-  type: 'fire' | 'flood' | 'warning';
+  type: 'fire' | 'flood' | 'warning' | 'ndvi';
   message: string;
   timestamp: Date;
   sector: string;
