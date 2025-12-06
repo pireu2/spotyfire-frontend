@@ -19,6 +19,8 @@ import { useUser } from "@stackframe/stack";
 import { useState } from "react";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReportsProvider } from "@/context/ReportsContext";
+import { CreditCard } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -122,11 +124,37 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="#"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+                href="/dashboard/rapoarte"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "dashboard/rapoarte"
+                    ? "bg-green-600/20 text-green-500 font-medium"
+                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                }`}
               >
                 <FileText className="h-5 w-5" />
                 Rapoarte
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="#"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+              >
+                <Settings className="h-5 w-5" />
+                Setări
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/payment"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "/payment"
+                    ? "bg-green-600/20 text-green-500 font-medium"
+                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                }`}
+              >
+                <CreditCard className="h-5 w-5" />
+                Payment
               </Link>
             </li>
             <li>
@@ -214,7 +242,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto">{children}</div>
+        <div className="flex-1 overflow-auto"><ReportsProvider>{children}</ReportsProvider></div>
       </main>
     </div>
   );

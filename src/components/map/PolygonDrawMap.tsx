@@ -18,8 +18,9 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
-  mapKey?: number;
 }
+
+export type { PolygonDrawMapProps };
 
 const markerIcon = new L.DivIcon({
   className: "custom-marker",
@@ -95,7 +96,6 @@ function MapClickHandler({
 export default function PolygonDrawMap({
   onPolygonChange,
   initialPolygon,
-  mapKey,
 }: PolygonDrawMapProps) {
   const [coordinates, setCoordinates] = useState<
     { lat: number; lng: number }[]
@@ -110,7 +110,7 @@ export default function PolygonDrawMap({
     } else {
       setCoordinates([]);
     }
-  }, [mapKey]);
+  }, [initialPolygon]);
 
   const handleMarkerClick = (index: number) => {
     const newCoords = coordinates.filter((_, i) => i !== index);

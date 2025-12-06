@@ -29,6 +29,8 @@ export interface Property {
   last_analysed_at: string;
   created_at: string;
   updated_at: string;
+  activePackage: string;
+  reportsLeft: number;
 }
 
 export interface CreatePropertyRequest {
@@ -42,6 +44,8 @@ export interface CreatePropertyRequest {
   center_lat: number;
   center_lng: number;
   estimated_value: number;
+  activePackage: string;
+  reportsLeft: number;
 }
 
 export interface UpdatePropertyRequest {

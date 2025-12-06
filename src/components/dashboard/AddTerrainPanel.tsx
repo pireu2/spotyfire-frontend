@@ -16,6 +16,7 @@ import { CreatePropertyRequest } from "@/types";
 import { createProperty } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
 import dynamic from "next/dynamic";
+import PricingModal from "@/components/payment/PricingModal";
 
 interface PolygonDrawMapProps {
   onPolygonChange: (
@@ -87,7 +88,6 @@ export default function AddTerrainPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>("cadastral");
-  const [mapKey, setMapKey] = useState(0);
 
   const [numarCadastral, setNumarCadastral] = useState("");
   const [cadastralData, setCadastralData] = useState<CadastralData | null>(
@@ -108,6 +108,36 @@ export default function AddTerrainPanel({
   );
 
   const estimatedValue = area * PRICE_PER_HA;
+
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [pendingRequestData, setPendingRequestData] =
+    useState<CreatePropertyRequest | null>(null);
+
+  const handlePaymentSuccess = async (pkg: string, reports: number) => {
+    if (!pendingRequestData) return;
+
+    const updatedRequestData = {
+      ...pendingRequestData,
+      activePackage: pkg,
+      reportsLeft: reports,
+    };
+
+    try {
+      setIsLoading(true);
+      const accessToken = await user
+        ?.getAuthJson()
+        .then((auth) => auth?.accessToken);
+      await createProperty(updatedRequestData, accessToken || undefined);
+      onSuccess();
+      setShowPricingModal(false);
+      setPendingRequestData(null);
+    } catch (err) {
+      console.error("Failed to create property:", err);
+      setError("A apărut o eroare la crearea terenului. Încearcă din nou.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePolygonChange = (
     coords: { lat: number; lng: number }[],
@@ -199,7 +229,6 @@ export default function AddTerrainPanel({
     setCoordinates([]);
     setLoadingProgress(0);
     setLoadingMessage("");
-    setMapKey((k) => k + 1);
   };
 
   const handleSubmit = async () => {
@@ -241,6 +270,8 @@ export default function AddTerrainPanel({
         center_lat: cadastralData.center_lat,
         center_lng: cadastralData.center_lng,
         estimated_value: estimatedValue,
+        activePackage: "",
+        reportsLeft: 0,
       };
     } else {
       const closedCoords = [...coordinates];
@@ -262,22 +293,13 @@ export default function AddTerrainPanel({
         center_lat: center.lat,
         center_lng: center.lng,
         estimated_value: estimatedValue,
+        activePackage: "",
+        reportsLeft: 0,
       };
     }
 
-    try {
-      setIsLoading(true);
-      const accessToken = await user
-        ?.getAuthJson()
-        .then((auth) => auth?.accessToken);
-      await createProperty(requestData, accessToken || undefined);
-      onSuccess();
-    } catch (err) {
-      console.error("Failed to create property:", err);
-      setError("A apărut o eroare la crearea terenului. Încearcă din nou.");
-    } finally {
-      setIsLoading(false);
-    }
+    setPendingRequestData(requestData);
+    setShowPricingModal(true);
   };
 
   return (
@@ -305,7 +327,6 @@ export default function AddTerrainPanel({
               setCoordinates([]);
               setArea(0);
               setCenter(null);
-              setMapKey((k) => k + 1);
             }}
             className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
               inputMode === "cadastral"
@@ -557,7 +578,6 @@ export default function AddTerrainPanel({
         <PolygonDrawMap
           onPolygonChange={handlePolygonChange}
           initialPolygon={cadastralFetched ? coordinates : undefined}
-          mapKey={mapKey}
         />
         {inputMode === "cadastral" && !cadastralFetched && (
           <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
@@ -573,6 +593,13 @@ export default function AddTerrainPanel({
           </div>
         )}
       </div>
+      <PricingModal
+        open={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        areaHa={pendingRequestData?.area_ha || 0}
+        userEmail={user?.primaryEmail || ""}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }

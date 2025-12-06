@@ -129,7 +129,7 @@ export const mockAlerts: Alert[] = [
   },
   {
     id: '8',
-    type: 'ndvi',
+    type: 'warning',
     message: 'Scădere NDVI detectată - posibilă degradare vegetație',
     timestamp: new Date('2025-12-06T09:00:00'),
     sector: 'Sector 6',
@@ -137,7 +137,7 @@ export const mockAlerts: Alert[] = [
   },
   {
     id: '9',
-    type: 'ndvi',
+    type: 'warning',
     message: 'Anomalie vegetație identificată - verificare recomandată',
     timestamp: new Date('2025-12-05T14:15:00'),
     sector: 'Sector 2',
@@ -145,7 +145,7 @@ export const mockAlerts: Alert[] = [
   },
   {
     id: '10',
-    type: 'ndvi',
+    type: 'warning',
     message: 'Stres hidric detectat în culturile de grâu',
     timestamp: new Date('2025-12-04T11:45:00'),
     sector: 'Sector 8',
