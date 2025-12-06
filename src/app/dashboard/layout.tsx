@@ -71,7 +71,7 @@ export default function DashboardLayout({
       )}
 
       <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
-        <div className="p-4 border-b border-slate-700">
+        <div className="p-4 border-b border-slate-700 flex justify-center">
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/spotyfire-logo-full.png"
