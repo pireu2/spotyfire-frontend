@@ -147,19 +147,13 @@ export default function DashboardLayout({
               <Satellite className="h-4 w-4 text-green-500" />
               <span className="text-sm text-slate-300">Status Conectare</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 h-7">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
               <span className="text-xs text-green-400">
                 Uplink Satelit Activ
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <Wifi className="h-3 w-3 text-slate-500" />
-              <span className="text-xs text-slate-500">
-                SMS Backup Disponibil
               </span>
             </div>
           </div>

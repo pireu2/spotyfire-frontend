@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Property } from "@/types";
 import { getProperties, deleteProperty } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
-import AddPropertyModal from "./AddPropertyModal";
+import Link from "next/link";
 
 interface PropertyManagerProps {
   onPropertySelect?: (property: Property) => void;
@@ -44,7 +44,6 @@ export default function PropertyManager({
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchProperties = async () => {
     try {
@@ -98,12 +97,6 @@ export default function PropertyManager({
 
   return (
     <>
-      <AddPropertyModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSuccess={fetchProperties}
-      />
-
       <div className="relative">
         {hasProperties ? (
           <div
@@ -123,14 +116,15 @@ export default function PropertyManager({
             {isOpen && (
               <div className="absolute left-full top-0 ml-2 w-72 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden z-50">
                 <div className="p-2 border-b border-slate-700">
-                  <Button
-                    size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={() => setShowAddModal(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Adaugă Teren Nou
-                  </Button>
+                  <Link href="/dashboard/terenuri">
+                    <Button
+                      size="sm"
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adaugă Teren Nou
+                    </Button>
+                  </Link>
                 </div>
 
                 <div className="max-h-64 overflow-y-auto">
@@ -181,13 +175,13 @@ export default function PropertyManager({
             )}
           </div>
         ) : (
-          <button
+          <Link
+            href="/dashboard/terenuri"
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-green-500 hover:bg-green-600/20 transition-colors w-full"
-            onClick={() => setShowAddModal(true)}
           >
             <Plus className="h-5 w-5" />
             <span>Adaugă Teren</span>
-          </button>
+          </Link>
         )}
       </div>
     </>

@@ -17,6 +17,8 @@ interface PolygonDrawMapProps {
     area: number,
     center: { lat: number; lng: number } | null
   ) => void;
+  initialPolygon?: { lat: number; lng: number }[];
+  mapKey?: number;
 }
 
 const markerIcon = new L.DivIcon({
@@ -92,10 +94,23 @@ function MapClickHandler({
 
 export default function PolygonDrawMap({
   onPolygonChange,
+  initialPolygon,
+  mapKey,
 }: PolygonDrawMapProps) {
   const [coordinates, setCoordinates] = useState<
     { lat: number; lng: number }[]
-  >([]);
+  >(initialPolygon || []);
+
+  useEffect(() => {
+    if (initialPolygon && initialPolygon.length > 0) {
+      setCoordinates(initialPolygon);
+      const area = calculatePolygonArea(initialPolygon);
+      const center = calculateCenter(initialPolygon);
+      onPolygonChange(initialPolygon, area, center);
+    } else {
+      setCoordinates([]);
+    }
+  }, [mapKey]);
 
   const handleMarkerClick = (index: number) => {
     const newCoords = coordinates.filter((_, i) => i !== index);
@@ -155,13 +170,6 @@ export default function PolygonDrawMap({
           }}
         />
       ))}
-
-      <div className="absolute top-4 right-4 z-1000 bg-slate-800/90 backdrop-blur px-3 py-2 rounded-lg border border-slate-700">
-        <p className="text-xs text-slate-400">Click pentru a adăuga puncte</p>
-        <p className="text-xs text-slate-400">
-          Click pe marker pentru a șterge
-        </p>
-      </div>
 
       {coordinates.length > 0 && coordinates.length < 3 && (
         <div className="absolute bottom-4 left-4 z-1000 bg-orange-500/20 backdrop-blur px-3 py-2 rounded-lg border border-orange-500/50">
