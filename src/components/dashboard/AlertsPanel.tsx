@@ -1,0 +1,88 @@
+"use client";
+
+import { AlertTriangle, Flame, Droplets, Clock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert } from "@/types";
+
+interface AlertsPanelProps {
+  alerts: Alert[];
+}
+
+const getAlertIcon = (type: Alert["type"]) => {
+  switch (type) {
+    case "fire":
+      return <Flame className="h-4 w-4 text-orange-500" />;
+    case "flood":
+      return <Droplets className="h-4 w-4 text-blue-500" />;
+    default:
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+  }
+};
+
+const getSeverityColor = (severity: Alert["severity"]) => {
+  switch (severity) {
+    case "high":
+      return "border-l-red-500 bg-red-500/10";
+    case "medium":
+      return "border-l-orange-500 bg-orange-500/10";
+    default:
+      return "border-l-yellow-500 bg-yellow-500/10";
+  }
+};
+
+const formatTime = (date: Date) => {
+  return new Intl.DateTimeFormat("ro-RO", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+export default function AlertsPanel({ alerts }: AlertsPanelProps) {
+  return (
+    <Card className="bg-slate-800/80 backdrop-blur border-slate-700">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-white flex items-center gap-2 text-lg">
+          <AlertTriangle className="h-5 w-5 text-orange-500" />
+          Alerte Active
+          <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+            {alerts.filter((a) => a.severity === "high").length}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {alerts.map((alert) => (
+          <div
+            key={alert.id}
+            className={`border-l-4 rounded-r-lg p-3 ${getSeverityColor(
+              alert.severity
+            )}`}
+          >
+            <div className="flex items-start gap-2">
+              {getAlertIcon(alert.type)}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white font-medium truncate">
+                  {alert.message}
+                </p>
+                <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
+                  <span>{alert.sector}</span>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatTime(alert.timestamp)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {alerts.length === 0 && (
+          <div className="text-center py-6 text-slate-400">
+            <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p>Nicio alertă activă</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

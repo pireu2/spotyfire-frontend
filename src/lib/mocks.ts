@@ -1,0 +1,120 @@
+import { LandParcel, Alert, NDVIDataPoint } from '@/types';
+
+export const mockParcels: LandParcel[] = [
+  {
+    id: '1',
+    name: 'Ferma Bărăgan - Grâu',
+    coordinates: [
+      [44.65, 26.85],
+      [44.65, 26.95],
+      [44.55, 26.95],
+      [44.55, 26.85],
+    ],
+    ndviIndex: 0.85,
+    status: 'healthy',
+    area: 120.5,
+  },
+  {
+    id: '2',
+    name: 'Câmpia Dunării - Porumb',
+    coordinates: [
+      [44.45, 26.65],
+      [44.45, 26.80],
+      [44.35, 26.80],
+      [44.35, 26.65],
+    ],
+    ndviIndex: 0.32,
+    status: 'fire',
+    area: 85.2,
+    damageEstimate: 145000,
+  },
+  {
+    id: '3',
+    name: 'Zona Brăila - Floarea Soarelui',
+    coordinates: [
+      [45.30, 27.90],
+      [45.30, 28.05],
+      [45.20, 28.05],
+      [45.20, 27.90],
+    ],
+    ndviIndex: 0.45,
+    status: 'flood',
+    area: 95.7,
+    damageEstimate: 98000,
+  },
+  {
+    id: '4',
+    name: 'Podișul Transilvaniei - Cartof',
+    coordinates: [
+      [46.55, 23.55],
+      [46.55, 23.70],
+      [46.45, 23.70],
+      [46.45, 23.55],
+    ],
+    ndviIndex: 0.78,
+    status: 'healthy',
+    area: 65.3,
+  },
+  {
+    id: '5',
+    name: 'Banatul - Vie',
+    coordinates: [
+      [45.75, 21.20],
+      [45.75, 21.35],
+      [45.65, 21.35],
+      [45.65, 21.20],
+    ],
+    ndviIndex: 0.72,
+    status: 'healthy',
+    area: 42.8,
+  },
+];
+
+export const mockAlerts: Alert[] = [
+  {
+    id: '1',
+    type: 'fire',
+    message: 'Incendiu detectat în Sectorul 4 - Parcela Sud',
+    timestamp: new Date('2025-12-06T14:30:00'),
+    sector: 'Sector 4',
+    severity: 'high',
+  },
+  {
+    id: '2',
+    type: 'flood',
+    message: 'Risc de inundație în Sectorul 2 - Nivel apă crescut',
+    timestamp: new Date('2025-12-06T12:15:00'),
+    sector: 'Sector 2',
+    severity: 'medium',
+  },
+  {
+    id: '3',
+    type: 'warning',
+    message: 'Alertă meteo: Temperaturi ridicate în următoarele 48h',
+    timestamp: new Date('2025-12-06T08:00:00'),
+    sector: 'Toate',
+    severity: 'low',
+  },
+];
+
+export const mockNDVIData: NDVIDataPoint[] = [
+  { date: 'Ian', value: 0.45 },
+  { date: 'Feb', value: 0.48 },
+  { date: 'Mar', value: 0.62 },
+  { date: 'Apr', value: 0.78 },
+  { date: 'Mai', value: 0.85 },
+  { date: 'Iun', value: 0.82 },
+  { date: 'Iul', value: 0.75 },
+  { date: 'Aug', value: 0.68 },
+  { date: 'Sep', value: 0.72 },
+  { date: 'Oct', value: 0.65 },
+  { date: 'Nov', value: 0.52 },
+  { date: 'Dec', value: 0.48 },
+];
+
+export const suggestedPrompts = [
+  'Analizează dimensiunea cicatricei de ardere',
+  'Generează raport pentru asigurător',
+  'Compară cu anul trecut',
+  'Care este starea vegetației?',
+];
