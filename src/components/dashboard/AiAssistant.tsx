@@ -76,14 +76,14 @@ export default function AiAssistant() {
     <>
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-green-600 hover:bg-green-700 shadow-lg z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-green-600 hover:bg-green-700 shadow-lg z-[9999]"
         size="icon"
       >
         <MessageCircle className="h-6 w-6" />
       </Button>
 
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-50 overflow-hidden">
+        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-[9999] overflow-hidden">
           <div className="bg-green-600 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="h-6 w-6 text-white" />
