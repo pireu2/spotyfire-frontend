@@ -14,11 +14,14 @@ import {
   LogOut,
   MapPin,
   Home,
+  Settings,
 } from "lucide-react";
 import { useUser } from "@stackframe/stack";
 import { useState } from "react";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+import { CreditCard } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -70,8 +73,9 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
-        <div className="p-4 border-b border-slate-700 flex justify-center">
+
+      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-20">
+        <div className="p-4 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/spotyfire-logo-full.png"
@@ -121,14 +125,30 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="#"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+                href="/dashboard/rapoarte"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "dashboard/rapoarte"
+                    ? "bg-green-600/20 text-green-500 font-medium"
+                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                }`}
               >
                 <FileText className="h-5 w-5" />
                 Rapoarte
               </Link>
             </li>
-
+            <li>
+              <Link
+                href="/dashboard/aboneaza-te"
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                  pathname === "/dashboard/aboneaza-te"
+                    ? "bg-green-600/20 text-green-500 font-medium"
+                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
+                }`}
+              >
+                <CreditCard className="h-5 w-5" />
+                Abonează-te
+              </Link>
+            </li>
           </ul>
         </nav >
 
@@ -205,8 +225,10 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto">{children}</div>
+        <div className="flex-1 overflow-auto relative">
+           {children}
+        </div>
       </main>
     </div >
   );
-}
+};

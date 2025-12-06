@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackClientApp } from "../stack/client";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ReportsProvider } from "@/context/ReportsContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,7 +33,9 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <StackProvider app={stackClientApp}><StackTheme>
-          {children}
+          <ReportsProvider>
+            {children}
+          </ReportsProvider>
         </StackTheme></StackProvider>
       </body>
     </html>
