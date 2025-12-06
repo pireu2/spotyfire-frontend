@@ -16,6 +16,7 @@ import Link from "next/link";
 
 export default function DashboardPage() {
   const user = useUser();
+  const [activeLayer, setActiveLayer] = useState("standard");
   const [properties, setProperties] = useState<Property[]>([]);
   const [parcels, setParcels] = useState<LandParcel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,8 +42,8 @@ export default function DashboardPage() {
               prop.risk_score > 70
                 ? "fire"
                 : prop.risk_score > 40
-                ? "flood"
-                : "healthy",
+                  ? "flood"
+                  : "healthy",
             area: prop.area_ha,
             damageEstimate:
               prop.risk_score > 50
@@ -101,8 +102,8 @@ export default function DashboardPage() {
   return (
     <div className="h-[calc(100vh-4rem)] p-4 flex gap-4">
       <div className="flex-1 relative rounded-xl overflow-hidden border border-slate-700">
-        <MapWrapper parcels={parcels} />
-        <MapLayers />
+        <MapWrapper parcels={parcels} alerts={mockAlerts} activeLayer={activeLayer} />
+        <MapLayers activeLayer={activeLayer} onLayerChange={setActiveLayer} />
 
         <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur px-4 py-2 rounded-lg flex items-center gap-4">
           <div className="flex items-center gap-2">

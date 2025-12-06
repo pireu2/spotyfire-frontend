@@ -1,7 +1,9 @@
 "use client";
 
-import { AlertTriangle, Flame, Droplets, Clock } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, Flame, Droplets, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Alert } from "@/types";
 
 interface AlertsPanelProps {
@@ -38,6 +40,17 @@ const formatTime = (date: Date) => {
 };
 
 export default function AlertsPanel({ alerts }: AlertsPanelProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Sort alerts by date descending (newest first)
+  const sortedAlerts = [...alerts].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  const displayedAlerts = sortedAlerts.slice(0, 3);
+  const hiddenAlerts = sortedAlerts.slice(3);
+  const hasMore = hiddenAlerts.length > 0;
+
   return (
     <Card className="bg-slate-800/80 backdrop-blur border-slate-700">
       <CardHeader className="pb-2">
@@ -50,31 +63,39 @@ export default function AlertsPanel({ alerts }: AlertsPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {alerts.map((alert) => (
-          <div
-            key={alert.id}
-            className={`border-l-4 rounded-r-lg p-3 ${getSeverityColor(
-              alert.severity
-            )}`}
-          >
-            <div className="flex items-start gap-2">
-              {getAlertIcon(alert.type)}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-white font-medium truncate">
-                  {alert.message}
-                </p>
-                <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
-                  <span>{alert.sector}</span>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {formatTime(alert.timestamp)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {displayedAlerts.map((alert) => (
+          <AlertItem key={alert.id} alert={alert} />
         ))}
+
+        <div
+          className={`space-y-2 overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+            }`}
+        >
+          {hiddenAlerts.map((alert) => (
+            <AlertItem key={alert.id} alert={alert} />
+          ))}
+        </div>
+
+        {hasMore && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full text-slate-400 hover:text-white hover:bg-slate-700/50 mt-2"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-2" />
+                Arată mai puțin
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-2" />
+                Arată mai multe ({hiddenAlerts.length})
+              </>
+            )}
+          </Button>
+        )}
 
         {alerts.length === 0 && (
           <div className="text-center py-6 text-slate-400">
@@ -84,5 +105,32 @@ export default function AlertsPanel({ alerts }: AlertsPanelProps) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function AlertItem({ alert }: { alert: Alert }) {
+  return (
+    <div
+      className={`border-l-4 rounded-r-lg p-3 ${getSeverityColor(
+        alert.severity
+      )}`}
+    >
+      <div className="flex items-start gap-2">
+        {getAlertIcon(alert.type)}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-white font-medium truncate">
+            {alert.message}
+          </p>
+          <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
+            <span>{alert.sector}</span>
+            <span>•</span>
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {formatTime(alert.timestamp)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

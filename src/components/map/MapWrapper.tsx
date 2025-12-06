@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { LandParcel } from "@/types";
+import { LandParcel, Alert } from "@/types";
 
 const MapCanvas = dynamic(() => import("./MapCanvas"), {
   ssr: false,
@@ -17,8 +17,10 @@ const MapCanvas = dynamic(() => import("./MapCanvas"), {
 
 interface MapWrapperProps {
   parcels: LandParcel[];
+  alerts?: Alert[];
+  activeLayer?: string;
 }
 
-export default function MapWrapper({ parcels }: MapWrapperProps) {
-  return <MapCanvas parcels={parcels} />;
+export default function MapWrapper({ parcels, alerts, activeLayer = 'standard' }: MapWrapperProps) {
+  return <MapCanvas parcels={parcels} alerts={alerts} activeLayer={activeLayer} />;
 }
