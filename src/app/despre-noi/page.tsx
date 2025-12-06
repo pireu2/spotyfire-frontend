@@ -30,12 +30,12 @@ export default function DesprePage() {
       <div className="relative z-10 container mx-auto px-6 pt-45 pb-20">
 
         {/* Intro Section */}
-        <div className="max-w-4xl mx-auto text-center mb-12">
+        <div className="max-w-6xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
             Monitorizare Completă <br />
             <span className="text-green-500">Din Satelit</span>
           </h1>
-          <p className="text-xl max-w-4xl text-slate-300 leading-relaxed">
+          <p className="text-xl max-w-6xl text-slate-300 leading-relaxed">
             SpotyFire este o platformă web care are la bază un proces complet de monitorizare a terenurilor folosindu-ne de date din satelit.
             Obiectivul nostru principal este realizarea unei analize post-incendiu și post-inundații a terenurilor
             pentru obținerea unor rapoarte care să conțină costuri orientative în eficientizarea procesului de despăgubire din partea firmelor de asigurări.
@@ -55,7 +55,7 @@ export default function DesprePage() {
         <div className="mb-32">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Problema</h2>
-            <p className="text-slate-400 max-w-4xl mx-auto text-lg">
+            <p className="text-slate-400 max-w-6xl mx-auto text-lg">
               Fermierii și proprietarii de terenuri pierd anual milioane din cauza incendiilor și inundațiilor.
               Estimarea pagubelor durează mult, este imprecisă, iar lipsa dovezilor duce la pierderea despăgubirilor.
             </p>
