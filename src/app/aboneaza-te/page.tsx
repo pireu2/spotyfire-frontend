@@ -24,9 +24,10 @@ export default function SubscribePage() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-4 gap-6 max-w-[1400px] mx-auto">
+                <div className="grid md:grid-cols-4 gap-6 max-w-[1400px] mx-auto pt-6">
                     {/* PER RAPORT PLAN - Now a main plan */}
-                    <div className="space-y-4">
+                    {/* Per Raport & Basic Wrappers need h-full */}
+                    <div className="h-full flex flex-col gap-4">
                         <div className="bg-green-800 rounded-3xl p-8 text-center border border-green-700 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                             <div className="absolute inset-0 bg-green-600/20 group-hover:bg-green-600/30 transition-colors" />
                             <div className="relative z-10">
@@ -39,7 +40,7 @@ export default function SubscribePage() {
                             </div>
                         </div>
 
-                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 min-h-[300px] flex flex-col">
+                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 flex flex-col flex-1">
                             <ul className="space-y-4 flex-1">
                                 {[
                                     "Plata doar la nevoie",
@@ -59,7 +60,8 @@ export default function SubscribePage() {
                     </div>
 
                     {/* BASIC PLAN */}
-                    <div className="space-y-4">
+                    {/* Per Raport & Basic Wrappers need h-full */}
+                    <div className="h-full flex flex-col gap-4">
                         <div className="bg-green-800 rounded-3xl p-8 text-center border border-green-700 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                             <div className="absolute inset-0 bg-green-600/20 group-hover:bg-green-600/30 transition-colors" />
                             <div className="relative z-10">
@@ -72,7 +74,7 @@ export default function SubscribePage() {
                             </div>
                         </div>
 
-                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 min-h-[300px] flex flex-col">
+                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 flex flex-col flex-1">
                             <ul className="space-y-4 flex-1">
                                 {[
                                     "Monitorizare pentru până la 20 ha",
@@ -92,9 +94,15 @@ export default function SubscribePage() {
                     </div>
 
                     {/* PRO PLAN - Removed Popular badge & Button */}
-                    <div className="space-y-4">
-                        <div className="bg-green-800 rounded-3xl p-8 text-center border border-green-700 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                    {/* Pro & Enterprise Wrappers need h-full too */}
+                    <div className="h-full flex flex-col gap-4 relative">
+                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-500 text-black font-bold px-4 py-1 rounded-full text-sm z-20 whitespace-nowrap">
+                            ALEGERE POPULARĂ
+                        </div>
+                        <div className="bg-green-800 rounded-3xl p-8 text-center border border-green-700 shadow-[0_0_50px_-12px_rgba(34,197,94,0.8)] relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                             <div className="absolute inset-0 bg-green-600/20 group-hover:bg-green-600/30 transition-colors" />
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-400/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(34,197,94,0.3)] rounded-3xl" />
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-bold mb-2 uppercase tracking-wide">
                                     Pro
@@ -105,7 +113,7 @@ export default function SubscribePage() {
                             </div>
                         </div>
 
-                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 min-h-[300px] flex flex-col">
+                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 flex flex-col flex-1">
                             <ul className="space-y-4 flex-1">
                                 {[
                                     "Monitorizare pentru până la 20 ha",
@@ -127,7 +135,8 @@ export default function SubscribePage() {
                     </div>
 
                     {/* ENTERPRISE PLAN */}
-                    <div className="space-y-4">
+                    {/* Pro & Enterprise Wrappers need h-full too */}
+                    <div className="h-full flex flex-col gap-4">
                         <div className="bg-green-800 rounded-3xl p-8 text-center border border-green-700 shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
                             <div className="absolute inset-0 bg-green-600/20 group-hover:bg-green-600/30 transition-colors" />
                             <div className="relative z-10">
@@ -140,7 +149,7 @@ export default function SubscribePage() {
                             </div>
                         </div>
 
-                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 min-h-[300px] flex flex-col">
+                        <div className="bg-green-900/40 backdrop-blur rounded-3xl p-8 border border-green-800/50 flex flex-col flex-1">
                             <ul className="space-y-4 flex-1">
                                 {[
                                     "Monitorizare pentru până la 20 ha",
