@@ -16,7 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@stackframe/stack";
+import { useUser, SignUp } from "@stackframe/stack";
 import { useState, useEffect, useRef } from "react";
 import Navbar from "./Navbar";
 import { API_URL } from "@/lib/api";
@@ -165,7 +165,7 @@ export default function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="border-slate-600 text-black hover:bg-slate-700 text-lg px-8 py-6"
+              className="bg-white text-black hover:bg-slate-700 hover:text-white border-slate-600 text-lg px-8 py-6"
             >
               Află Mai Multe
             </Button>
@@ -233,6 +233,30 @@ export default function HeroSection() {
 
 
       </div>
+
+      {showSignUp && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl py-6 px-10 max-w-md w-full max-h-[90vh] overflow-y-auto relative border border-slate-700 text-white [&_input]:text-black [&_button]:text-current">
+            <button
+              onClick={() => setShowSignUp(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl"
+            >
+              x
+            </button>
+            <SignUp
+              firstTab="password"
+              extraInfo={
+                <p className="text-slate-400 text-xs text-center mt-2">
+                  Prin înregistrare, accepți{" "}
+                  <a href="/terms" className="text-green-500 hover:underline">
+                    Termenii și Condițiile
+                  </a>
+                </p>
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
 
   );
