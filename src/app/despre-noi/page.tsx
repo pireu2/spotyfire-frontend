@@ -20,10 +20,10 @@ import Link from "next/link";
 export default function DesprePage() {
   return (
     <div className="relative min-h-screen bg-slate-900 overflow-hidden font-sans">
-      <div className="absolute inset-0 bg-slate-950" />
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(circle 1400px at 50% -20%, rgba(34, 197, 94, 0.25) 0%, transparent 70%)' }} />
-      <div className="absolute inset-0 bg-grid-pattern" />
-      <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none" />
+      <div className="fixed inset-0 bg-slate-950" />
+      <div className="fixed inset-0" style={{ background: 'radial-gradient(circle 1400px at 50% -20%, rgba(34, 197, 94, 0.25) 0%, transparent 70%)' }} />
+      <div className="fixed inset-0 bg-grid-pattern" />
+      <div className="fixed inset-0 bg-noise pointer-events-none" />
 
       <Navbar />
 
