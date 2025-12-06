@@ -8,6 +8,7 @@ interface MapCanvasProps {
   parcels: LandParcel[];
   alerts?: Alert[];
   activeLayer?: string;
+  onParcelSelect?: (parcel: LandParcel) => void;
 }
 
 const getParcelColor = (status: LandParcel["status"]) => {
@@ -38,7 +39,7 @@ const getNDVILabel = (value: number) => {
   return "Scăzut";
 };
 
-export default function MapCanvas({ parcels, alerts = [], activeLayer = "standard" }: MapCanvasProps) {
+export default function MapCanvas({ parcels, alerts = [], activeLayer = "standard", onParcelSelect }: MapCanvasProps) {
   const romaniaBounds: [[number, number], [number, number]] = [
     [43.5, 20.2],
     [48.3, 30.0],
@@ -215,6 +216,13 @@ export default function MapCanvas({ parcels, alerts = [], activeLayer = "standar
               ...colors,
               fillOpacity: 0.4,
               weight: 3,
+            }}
+            eventHandlers={{
+              click: () => {
+                if (onParcelSelect) {
+                  onParcelSelect(parcel);
+                }
+              },
             }}
           >
             <Popup>

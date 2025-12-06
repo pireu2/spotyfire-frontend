@@ -20,7 +20,7 @@ export default function ReportsPage() {
   };
 
   const navigateToPayment = () => {
-    router.push("/payment");
+    router.push("/dashboard/aboneaza-te");
   };
 
   return (

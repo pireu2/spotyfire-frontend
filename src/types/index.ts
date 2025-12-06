@@ -6,6 +6,8 @@ export interface LandParcel {
   status: 'healthy' | 'fire' | 'flood';
   area: number;
   damageEstimate?: number;
+  activePackage?: string;
+  reportsLeft?: number;
 }
 
 export interface Geometry {

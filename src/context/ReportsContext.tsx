@@ -20,6 +20,7 @@ interface ReportsContextType {
   addCredits: (amount: number) => void;
   activatePackage: (pkg: PackageType, hectares: number) => void;
   requestReport: (title: string, content: string) => boolean;
+  addReport: (title: string, content: string, type?: "manual" | "automated") => void;
   generateAutomatedReport: (title: string, content: string) => void;
   calculatePrice: (pkg: PackageType, hectares: number) => number;
 }
@@ -140,6 +141,17 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
     setReports((prev) => [newReport, ...prev]);
   };
 
+  const addReport = (title: string, content: string, type: "manual" | "automated" = "manual") => {
+    const newReport: Report = {
+      id: crypto.randomUUID(),
+      title,
+      date: new Date(),
+      type,
+      content,
+    };
+    setReports((prev) => [newReport, ...prev]);
+  };
+
   return (
     <ReportsContext.Provider
       value={{
@@ -150,6 +162,7 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
         addCredits,
         activatePackage,
         requestReport,
+        addReport,
         generateAutomatedReport,
         calculatePrice,
       }}

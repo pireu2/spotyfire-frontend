@@ -12,18 +12,19 @@ import { getProperties } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
 import { MapPin, Loader2, FileText, Plus } from "lucide-react";
 import Link from "next/link";
-import { useReports } from "@/context/ReportsContext";
+import { useReports, Report } from "@/context/ReportsContext";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Property, LandParcel } from "@/types";
 
 export default function DashboardPage() {
   const user = useUser();
-  const { credits, totalReports, activePackage, reports, requestReport, generateAutomatedReport } = useReports();
+  const { credits, totalReports, activePackage, reports, requestReport, addReport, generateAutomatedReport } = useReports();
   const router = useRouter();
   const [activeLayer, setActiveLayer] = useState("standard");
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [selectedParcel, setSelectedParcel] = useState<LandParcel | null>(null);
   const [parcels, setParcels] = useState<LandParcel[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -54,6 +55,8 @@ export default function DashboardPage() {
               prop.risk_score > 50
                 ? prop.estimated_value * (prop.risk_score / 100)
                 : undefined,
+            activePackage: prop.activePackage || "Basic", // Default if missing
+            reportsLeft: prop.reportsLeft !== undefined ? prop.reportsLeft : 5, // Default if missing
           }));
           setParcels(convertedParcels);
         }
@@ -142,8 +145,43 @@ export default function DashboardPage() {
   return (
     <div className="h-[calc(100vh-4rem)] p-4 flex gap-4">
       <div className="flex-1 relative rounded-xl overflow-hidden border border-slate-700">
-        <MapWrapper parcels={parcels} alerts={mockAlerts} activeLayer={activeLayer} />
+        <MapWrapper 
+            parcels={parcels} 
+            alerts={mockAlerts} 
+            activeLayer={activeLayer} 
+            onParcelSelect={(parcel) => {
+                setSelectedParcel(parcel);
+                // Optional: Show toast or feedback
+                console.log("Selected parcel:", parcel.name);
+            }}
+        />
         <MapLayers activeLayer={activeLayer} onLayerChange={setActiveLayer} />
+        
+        {selectedParcel && (
+            <div className="absolute top-4 left-4 right-16 z-[500] bg-slate-900/90 backdrop-blur px-4 py-3 rounded-lg border border-slate-700 shadow-xl animate-in slide-in-from-top-2">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Teren Selectat</p>
+                        <h3 className="font-bold text-white text-lg">{selectedParcel.name}</h3>
+                        <p className="text-sm text-slate-300">
+                            Status: <span className={selectedParcel.status === 'healthy' ? 'text-green-400' : 'text-orange-400'}>{selectedParcel.status}</span>
+                        </p>
+                    </div>
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0 rounded-full hover:bg-slate-800"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedParcel(null);
+                        }}
+                    >
+                        <span className="sr-only">Close</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </Button>
+                </div>
+            </div>
+        )}
 
         <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur px-4 py-2 rounded-lg flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -171,29 +209,52 @@ export default function DashboardPage() {
                 <FileText className="h-4 w-4 text-green-500" />
                 Rapoarte
                 </h3>
-                {activePackage && <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">{activePackage} Plan</p>}
+                {selectedParcel ? (
+                   <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">{selectedParcel.activePackage || "Basic"} Plan</p>
+                ) : (
+                   activePackage && <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">{activePackage} ("Global")</p>
+                )}
             </div>
-            <span className={`text-sm font-bold px-2 py-0.5 rounded ${credits > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-              {credits} / {totalReports > 0 ? totalReports : '-'}
+            <span className={`text-sm font-bold px-2 py-0.5 rounded ${(selectedParcel ? (selectedParcel.reportsLeft || 0) : credits) > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+              {selectedParcel ? (selectedParcel.reportsLeft || 0) : credits} / {selectedParcel ? (selectedParcel.activePackage === "Pro" ? 15 : selectedParcel.activePackage === "Enterprise" ? 30 : 5) : (totalReports > 0 ? totalReports : '-')}
             </span>
           </div>
 
           <Button
             onClick={() => {
-              if (credits > 0) {
-                const success = requestReport("Raport Manual Solicitat", "Analiză detaliată a terenurilor selectate.");
-                if (success) {
-                   // Success
-                }
+              if (selectedParcel) {
+                  if ((selectedParcel.reportsLeft || 0) > 0) {
+                      addReport(
+                        `Raport: ${selectedParcel.name}`, 
+                        `Analiză detaliată pentru terenul ${selectedParcel.name} (${selectedParcel.area} ha). Status curent: ${selectedParcel.status}.`
+                      );
+                      
+                      // Update local state for immediate feedback
+                      setParcels(prev => prev.map(p => 
+                          p.id === selectedParcel.id 
+                          ? { ...p, reportsLeft: (p.reportsLeft || 0) - 1 }
+                          : p
+                      ));
+                      setSelectedParcel(prev => prev ? { ...prev, reportsLeft: (prev.reportsLeft || 0) - 1 } : null);
+                      
+                  } else {
+                     alert(`Nu mai ai rapoarte disponibile pentru acest teren (${selectedParcel.name}).`);
+                     router.push('/dashboard/aboneaza-te'); // Use standard route
+                  }
               } else {
-                alert("Nu mai ai rapoarte disponibile.");
-                router.push("/payment");
+                // Global fallback (legacy or if logic requires it)
+                if (credits > 0) {
+                   alert("Vă rugăm selectați un teren de pe hartă pentru a genera raportul.");
+                } else {
+                     alert("Nu mai ai rapoarte disponibile.");
+                     router.push('/aboneaza-te');
+                }
               }
             }}
-            className="w-full bg-slate-700 hover:bg-slate-600 text-white mb-4"
+            className={`w-full text-white mb-4 transition-all duration-200 ${selectedParcel ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-900/20' : 'bg-slate-700 hover:bg-slate-600'}`}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Cere raport
+            {selectedParcel ? 'Generează Raport Teren' : 'Cere raport (Selectează teren)'}
           </Button>
 
           {/* Simulate Automated Report to test logic */}
@@ -203,7 +264,7 @@ export default function DashboardPage() {
                    generateAutomatedReport("Alertă Automată Incendiu", "Detectat incendiu în Sectorul 4.");
                } else {
                    alert("Nu mai ai rapoarte disponibile pentru procesare automată.");
-                   router.push("/payment");
+                   router.push('/aboneaza-te');
                }
             }}
             variant="outline"

@@ -4,15 +4,12 @@ import { useState } from "react";
 import { useReports, PackageType } from "@/context/ReportsContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input"; // As
-// suming this exists or standard input
-import { Check, CreditCard, Shield } from "lucide-react";
-import Link from "next/link";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Check, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function PaymentPage() {
+export default function SubscriptionContent({ onSuccess }: { onSuccess?: () => void }) {
   const { calculatePrice, activatePackage } = useReports();
   const router = useRouter();
   
@@ -64,29 +61,17 @@ export default function PaymentPage() {
       // Close modal and redirect after a moment
       setTimeout(() => {
         setIsModalOpen(false);
-        router.push("/dashboard");
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            router.push("/dashboard");
+        }
       }, 1500);
     }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-slate-950 to-slate-950 pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 pointer-events-none" />
-
-      {/* Header */}
-      <header className="py-6 px-6 relative z-10 flex items-center justify-between max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2 font-bold text-xl">
-            <Shield className="text-green-500 h-6 w-6" />
-            <span>SpotyFire</span>
-        </div>
-        <Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors">
-            Înapoi la Dashboard
-        </Link>
-      </header>
-
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 relative z-10 space-y-12">
+    <div className="w-full max-w-7xl mx-auto px-6 py-12 space-y-12">
         {/* Hero / Icon */}
         <div className="text-center space-y-6">
           <div className="flex justify-center">
@@ -95,13 +80,11 @@ export default function PaymentPage() {
                 <CreditCard className="h-20 w-20 text-green-400 animate-float-pulse relative z-10" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Alege Planul Potrivit</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-white">Alege Planul Potrivit</h1>
           <p className="text-slate-400 max-w-2xl mx-auto">
             Soluții flexibile pentru ferma ta. Prețul se ajustează automat în funcție de suprafața terenului.
           </p>
         </div>
-
-
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8">
@@ -138,11 +121,10 @@ export default function PaymentPage() {
                 );
             })}
         </div>
-      </main>
 
       {/* Confirmation Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-md">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white sm:max-w-md z-[100]">
             <DialogHeader>
                 <DialogTitle>Confirmare Plată</DialogTitle>
                 <DialogDescription className="text-slate-400">
@@ -170,7 +152,6 @@ export default function PaymentPage() {
                     
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Email pentru factură</label>
-                        {/* Use standard Input if imported, or primitive input */}
                         <Input
                             type="email" 
                             placeholder="nume@exemplu.com"

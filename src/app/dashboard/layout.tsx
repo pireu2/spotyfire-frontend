@@ -20,7 +20,7 @@ import { useUser } from "@stackframe/stack";
 import { useState } from "react";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ReportsProvider } from "@/context/ReportsContext";
+
 import { CreditCard } from "lucide-react";
 
 export default function DashboardLayout({
@@ -73,7 +73,7 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
+      <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-20">
         <div className="p-4 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -137,15 +137,15 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="/payment"
+                href="/dashboard/aboneaza-te"
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/payment"
+                  pathname === "/dashboard/aboneaza-te"
                     ? "bg-green-600/20 text-green-500 font-medium"
                     : "text-slate-400 hover:bg-slate-700 hover:text-white"
                 }`}
               >
                 <CreditCard className="h-5 w-5" />
-                Payment
+                Abonează-te
               </Link>
             </li>
             <li>
@@ -233,7 +233,9 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto"><ReportsProvider>{children}</ReportsProvider></div>
+        <div className="flex-1 overflow-auto relative">
+           {children}
+        </div>
       </main>
     </div >
   );
