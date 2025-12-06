@@ -8,6 +8,49 @@ export interface LandParcel {
   damageEstimate?: number;
 }
 
+export interface Geometry {
+  id: string;
+  type: string;
+  coordinates: [number, number][][];
+  created_at: string;
+}
+
+export interface Property {
+  id: string;
+  user_id: string;
+  name: string;
+  geometry: Geometry;
+  crop_type: string;
+  area_ha: number;
+  center_lat: number;
+  center_lng: number;
+  estimated_value: number;
+  risk_score: number;
+  last_analysed_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePropertyRequest {
+  name: string;
+  geometry: {
+    type: 'Polygon';
+    coordinates: { lat: number; lng: number }[][];
+  };
+  crop_type: string;
+  area_ha: number;
+  center_lat: number;
+  center_lng: number;
+  estimated_value: number;
+}
+
+export interface UpdatePropertyRequest {
+  name?: string;
+  crop_type?: string;
+  area_ha?: number;
+  estimated_value?: number;
+}
+
 export interface Alert {
   id: string;
   type: 'fire' | 'flood' | 'warning';

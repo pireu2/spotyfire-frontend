@@ -151,7 +151,7 @@ export default function AiAssistant() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-green-600 hover:bg-green-700 shadow-lg z-[9999]"
+          className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-green-600 hover:bg-green-700 shadow-lg z-9999"
           size="icon"
         >
           <MessageCircle className="h-7 w-7" />
@@ -161,7 +161,7 @@ export default function AiAssistant() {
       {isOpen && (
         <div
           ref={chatRef}
-          className="fixed top-4 right-4 bottom-4 w-[45vw] min-w-[350px] max-w-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-[9999] overflow-hidden"
+          className="fixed top-4 right-4 bottom-4 w-[45vw] min-w-[350px] max-w-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-9999 overflow-hidden"
         >
           <div className="bg-green-600 p-4 flex items-center justify-between select-none">
             <div className="flex items-center gap-2">

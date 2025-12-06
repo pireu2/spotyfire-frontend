@@ -31,7 +31,7 @@ export default function HeroSection() {
 
   return (
     <div className="relative min-h-screen bg-slate-900 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-slate-900 to-slate-900" />
+      <div className="absolute inset-0 bg-linear-to-br from-green-900/20 via-slate-900 to-slate-900" />
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
 
       {showLogoutConfirm && (
