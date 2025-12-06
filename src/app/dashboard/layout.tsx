@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Shield,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { useUser } from "@stackframe/stack";
 import { useState } from "react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardLayout({
@@ -26,6 +28,7 @@ export default function DashboardLayout({
   const user = useUser();
   const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleLogout = async () => {
     await user?.signOut();
@@ -70,8 +73,13 @@ export default function DashboardLayout({
       <aside className="w-64 bg-slate-800/80 backdrop-blur border-r border-slate-700 flex flex-col relative z-10">
         <div className="p-4 border-b border-slate-700">
           <Link href="/" className="flex items-center gap-2">
-            <Shield className="h-8 w-8 text-green-500" />
-            <span className="text-xl font-bold text-white">SpotyFire</span>
+            <Image
+              src="/spotyfire-logo-full.png"
+              alt="SpotyFire"
+              width={180}
+              height={45}
+              className="h-12 w-auto"
+            />
           </Link>
         </div>
 
@@ -105,7 +113,7 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="#"
+                href="/dashboard/alerte"
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
               >
                 <Bell className="h-5 w-5" />
@@ -169,25 +177,46 @@ export default function DashboardLayout({
             </p>
           </div>
           <div className="flex items-center gap-4">
-            {user && (
-              <div className="flex items-center gap-2 text-sm text-slate-400">
-                {user.primaryEmail}
-              </div>
-            )}
             <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg">
               <Home className="h-4 w-4 text-slate-400" />
               <span className="text-sm text-slate-300">
                 Fermă Demo - București
               </span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-slate-400 hover:text-white hover:bg-red-600/20"
-              onClick={() => setShowLogoutConfirm(true)}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="w-10 h-10 rounded-full bg-slate-300 hover:bg-white flex items-center justify-center transition-colors"
+                >
+                  <User className="h-5 w-5 text-green-600" />
+                </button>
+                <div
+                  className={`fixed inset-0 z-40 transition-opacity duration-200 ${showProfileMenu ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  onClick={() => setShowProfileMenu(false)}
+                />
+                <div className={`absolute right-0 top-12 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-50 overflow-hidden transition-all duration-200 origin-top-right ${showProfileMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+                  <div className="p-4 border-b border-slate-700">
+                    <p className="text-white font-medium">
+                      Bună, {user.displayName || "Utilizator"}
+                    </p>
+                    <p className="text-slate-400 text-sm truncate">
+                      {user.primaryEmail}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setShowLogoutConfirm(true);
+                    }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-slate-300 hover:bg-red-600/20 hover:text-white transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 

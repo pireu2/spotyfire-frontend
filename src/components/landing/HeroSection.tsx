@@ -65,14 +65,38 @@ function useCountUp(end: number, duration: number = 2000) {
   return { count, ref };
 }
 
+const EXPECTED_API_URL = 'https://snow-rendering-many-scientific.trycloudflare.com';
+
 export default function HeroSection() {
   const user = useUser();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
   
   const fires = useCountUp(130, 2000);
   const floods = useCountUp(100, 2000);
   const ndvi = useCountUp(400, 2000);
+
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL + "/health";
+     
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000),
+        });
+        const data = await response.json();
+        setIsBackendOnline(data.status === 'healthy');
+      } catch {
+        setIsBackendOnline(false);
+      }
+    };
+
+    checkBackendStatus();
+    const interval = setInterval(checkBackendStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,13 +123,13 @@ export default function HeroSection() {
             <span className="block text-green-500">Din Spațiu</span>
           </h1>
 
-          <div className="inline-flex items-center gap-2 bg-green-600/20 border border-green-600/30 rounded-full px-4 py-2 mb-8">
+          <div className={`inline-flex items-center gap-2 ${isBackendOnline === false ? 'bg-red-600/20 border-red-600/30' : 'bg-green-600/20 border-green-600/30'} border rounded-full px-4 py-2 mb-8`}>
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isBackendOnline === false ? 'bg-red-400' : 'bg-green-400'} opacity-75`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${isBackendOnline === false ? 'bg-red-500' : 'bg-green-500'}`}></span>
             </span>
-            <span className="text-green-400 text-sm font-medium">
-              Conexiune Satelit Activă
+            <span className={`${isBackendOnline === false ? 'text-red-400' : 'text-green-400'} text-sm font-medium`}>
+              {isBackendOnline === null ? 'Verificare conexiune...' : isBackendOnline ? 'Conexiune Satelit Activă' : 'Conexiune Satelit Lipsă'}
             </span>
           </div>
           
@@ -137,13 +161,15 @@ export default function HeroSection() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-slate-600 text-slate-300 hover:bg-slate-800 text-lg px-8 py-6"
-            >
-              Află Mai Multe
-            </Button>
+            <Link href="/despre-noi">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-slate-600 text-slate-500 hover:bg-slate-800 hover:text-slate-300 text-lg px-8 py-6"
+              >
+                Află Mai Multe
+              </Button>
+            </Link>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mt-10">

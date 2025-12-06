@@ -95,12 +95,12 @@ export default function Navbar() {
                 />
               </Link>
               <div className="hidden md:flex items-center gap-6 mt-1">
-                <a
-                  href="#despre-noi"
+                <Link
+                  href="/despre-noi"
                   className="text-slate-300 hover:text-white transition-colors"
                 >
                   Despre Noi
-                </a>
+                </Link>
                 <a
                   href="#aboneaza-te"
                   className="text-slate-300 hover:text-white transition-colors"
@@ -122,7 +122,7 @@ export default function Navbar() {
                   <div className="relative">
                     <button
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className="w-10 h-10 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center transition-colors"
+                      className="w-10 h-10 rounded-full bg-slate-300 hover:bg-white flex items-center justify-center transition-colors"
                     >
                       <User className="h-5 w-5 text-green-600" />
                     </button>
