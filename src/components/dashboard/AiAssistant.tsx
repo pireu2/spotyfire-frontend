@@ -5,8 +5,10 @@ import { MessageCircle, Send, X, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/types";
 import { suggestedPrompts } from "@/lib/mocks";
+import { useUser } from "@stackframe/stack";
 
 export default function AiAssistant() {
+  const user = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -34,38 +36,59 @@ export default function AiAssistant() {
     setInput("");
     setIsTyping(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const accessToken = await user
+        ?.getAuthJson()
+        .then((auth) => auth?.accessToken);
 
-    const responses: Record<string, string> = {
-      dimensiune:
-        "Bazat pe analiza satelitară, cicatricea de ardere are o suprafață de aproximativ 38.2 hectare. Severitatea este estimată la 65%, cu zone de regenerare deja vizibile în marginile afectate.",
-      raport:
-        "Am pregătit un raport preliminar pentru cererea de despăgubire. Acesta include: date GPS ale zonei afectate, imagini satelitare înainte/după, estimarea pierderilor (45,000 RON), și certificatul de conformitate. Doriți să-l descărcați?",
-      "anul trecut":
-        "Comparativ cu anul trecut, indicele NDVI mediu este cu 12% mai scăzut. Această scădere se datorează în principal secetei din perioada iulie-august și incendiului recent din Sectorul 4.",
-      vegetație:
-        "Starea actuală a vegetației: 65% din suprafață prezintă NDVI > 0.6 (sănătos), 25% între 0.3-0.6 (stres moderat), și 10% < 0.3 (deteriorat sever). Recomand irigare suplimentară în zonele de stres.",
-    };
+      const response = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+        }/api/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          },
+          body: JSON.stringify({
+            message: userMessage.content,
+            context: null,
+            conversation_history: messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        }
+      );
 
-    let response =
-      "Analizez datele disponibile... Pentru mai multe detalii, puteți selecta una din sugestiile de mai jos sau reformula întrebarea.";
-
-    for (const [key, value] of Object.entries(responses)) {
-      if (input.toLowerCase().includes(key)) {
-        response = value;
-        break;
+      if (!response.ok) {
+        throw new Error("Failed to get response");
       }
+
+      const data = await response.json();
+
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.response,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          "Îmi pare rău, a apărut o eroare. Vă rugăm să încercați din nou.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
     }
-
-    const assistantMessage: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: response,
-      timestamp: new Date(),
-    };
-
-    setIsTyping(false);
-    setMessages((prev) => [...prev, assistantMessage]);
   };
 
   const handleSuggestedPrompt = (prompt: string) => {
