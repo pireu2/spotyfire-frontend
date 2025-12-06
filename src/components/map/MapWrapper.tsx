@@ -19,8 +19,9 @@ interface MapWrapperProps {
   parcels: LandParcel[];
   alerts?: Alert[];
   activeLayer?: string;
+  onParcelSelect?: (parcel: LandParcel) => void;
 }
 
-export default function MapWrapper({ parcels, alerts, activeLayer = 'standard' }: MapWrapperProps) {
-  return <MapCanvas parcels={parcels} alerts={alerts} activeLayer={activeLayer} />;
+export default function MapWrapper({ parcels, alerts, activeLayer = 'standard', onParcelSelect }: MapWrapperProps) {
+  return <MapCanvas parcels={parcels} alerts={alerts} activeLayer={activeLayer} onParcelSelect={onParcelSelect} />;
 }

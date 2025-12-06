@@ -120,7 +120,7 @@ export default function HeroSection() {
 
         <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight pt-16">
           Protejăm Terenul Tău
-          <span className="block text-green-500">Din Spațiu</span>
+          <span className="block text-green-500">Din Satelit</span>
         </h1>
 
         <div className={`inline-flex items-center gap-2 ${isBackendOnline === false ? 'bg-red-600/20 border-red-600/30' : 'bg-green-600/20 border-green-600/30'} border rounded-full px-4 py-2 mb-8`}>
@@ -136,7 +136,7 @@ export default function HeroSection() {
         <p className="text-xl text-slate-400 mb-10 max-w-3xl mx-auto">
           Detectează incendii și inundații în timp real folosind imagini
           satelitare. Analizează sănătatea vegetației și automatizează
-          cererile de despăgubire cu AI.
+          cererile de despăgubire cu ajutorul AI-ului.
         </p>
 
 
