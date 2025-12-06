@@ -24,6 +24,7 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
+  mapKey?: number;
 }
 
 const PolygonDrawMap = dynamic<PolygonDrawMapProps>(
@@ -306,8 +307,8 @@ export default function AddTerrainPanel({
               setMapKey((k) => k + 1);
             }}
             className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${inputMode === "cadastral"
-                ? "text-green-500 border-b-2 border-green-500 bg-green-500/10"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+              ? "text-green-500 border-b-2 border-green-500 bg-green-500/10"
+              : "text-slate-400 hover:text-white hover:bg-slate-700/50"
               }`}
           >
             <Building2 className="h-3.5 w-3.5" />
@@ -321,8 +322,8 @@ export default function AddTerrainPanel({
               resetCadastral();
             }}
             className={`flex-1 px-3 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${inputMode === "draw"
-                ? "text-green-500 border-b-2 border-green-500 bg-green-500/10"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/50"
+              ? "text-green-500 border-b-2 border-green-500 bg-green-500/10"
+              : "text-slate-400 hover:text-white hover:bg-slate-700/50"
               }`}
           >
             <MapPin className="h-3.5 w-3.5" />
