@@ -170,7 +170,18 @@ export default function AddTerrainPanel({
       const accessToken = await user
         ?.getAuthJson()
         .then((auth) => auth?.accessToken);
-      await createProperty(updatedRequestData, accessToken || undefined);
+      const createdProperty = await createProperty(updatedRequestData, accessToken || undefined);
+      
+      // Save subscription info to localStorage since backend may not persist it
+      if (createdProperty?.id) {
+        const subscriptionData = JSON.parse(localStorage.getItem('propertySubscriptions') || '{}');
+        subscriptionData[createdProperty.id] = {
+          activePackage: pkg,
+          reportsLeft: reports,
+        };
+        localStorage.setItem('propertySubscriptions', JSON.stringify(subscriptionData));
+      }
+      
       onSuccess();
       setShowPricingModal(false);
       setPendingRequestData(null);

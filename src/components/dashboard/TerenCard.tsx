@@ -7,7 +7,7 @@ import { MapPin, Euro, SquareIcon, RefreshCw, Trash2 } from "lucide-react";
 const PACKAGE_REPORTS: Record<string, number> = {
   Basic: 5,
   Pro: 15,
-  Enterprise: 50,
+  Enterprise: 30,
 };
 
 export default function TerenCard({

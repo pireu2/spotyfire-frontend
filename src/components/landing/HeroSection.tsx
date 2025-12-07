@@ -73,9 +73,9 @@ export default function HeroSection() {
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
 
-  const fires = useCountUp(130, 2000);
-  const floods = useCountUp(100, 2000);
-  const ndvi = useCountUp(400, 2000);
+  const fires = useCountUp(16000, 2000);
+  const floods = useCountUp(50, 2000);
+  const ndvi = useCountUp(10000, 2000);
 
   useEffect(() => {
     const checkBackendStatus = async () => {

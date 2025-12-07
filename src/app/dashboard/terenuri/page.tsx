@@ -66,6 +66,12 @@ export default function TerenuriPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
 
+  const PACKAGE_REPORTS: Record<string, number> = {
+    Basic: 5,
+    Pro: 15,
+    Enterprise: 30,
+  };
+
   const fetchProperties = async () => {
     try {
       setIsLoading(true);
@@ -73,7 +79,23 @@ export default function TerenuriPage() {
         ?.getAuthJson()
         .then((auth) => auth?.accessToken);
       const data = await getProperties(accessToken || undefined);
-      setProperties(data);
+      
+      // Get locally stored subscription info (since backend may not persist it)
+      const savedSubscriptions = JSON.parse(localStorage.getItem('propertySubscriptions') || '{}');
+      
+      // Merge API data with localStorage subscription info
+      const propertiesWithReports = data.map((p) => {
+        const savedSub = savedSubscriptions[p.id];
+        const activePackage = savedSub?.activePackage || p.activePackage || 'Basic';
+        const reportsLeft = savedSub?.reportsLeft ?? p.reportsLeft ?? PACKAGE_REPORTS[activePackage] ?? 5;
+        
+        return {
+          ...p,
+          activePackage,
+          reportsLeft,
+        };
+      });
+      setProperties(propertiesWithReports);
     } catch (error) {
       console.error("Failed to fetch properties:", error);
     } finally {
@@ -118,6 +140,15 @@ export default function TerenuriPage() {
 
   const handleRenewSuccess = (pkg: string, reports: number) => {
     if (!renewProperty) return;
+    
+    // Save to localStorage
+    const subscriptionData = JSON.parse(localStorage.getItem('propertySubscriptions') || '{}');
+    subscriptionData[renewProperty.id] = {
+      activePackage: pkg,
+      reportsLeft: reports,
+    };
+    localStorage.setItem('propertySubscriptions', JSON.stringify(subscriptionData));
+    
     // Update the property with new package and reports
     setProperties((prev) =>
       prev.map((p) =>
