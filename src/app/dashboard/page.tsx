@@ -7,7 +7,7 @@ import HealthStats from "@/components/dashboard/HealthStats";
 import AlertsPanel from "@/components/dashboard/AlertsPanel";
 import ClaimsCard from "@/components/dashboard/ClaimsCard";
 import AiAssistant from "@/components/dashboard/AiAssistant";
-import { mockAlerts, mockNDVIData } from "@/lib/mocks";
+import { mockNDVIData } from "@/lib/mocks";
 import { getProperties } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
 import { MapPin, Loader2, FileText, Plus } from "lucide-react";
@@ -19,12 +19,21 @@ import { Property, LandParcel } from "@/types";
 
 export default function DashboardPage() {
   const user = useUser();
-  const { credits, totalReports, activePackage, reports, requestReport, addReport, generateAutomatedReport } = useReports();
+  const {
+    credits,
+    totalReports,
+    activePackage,
+    reports,
+    requestReport,
+    addReport,
+    generateAutomatedReport,
+  } = useReports();
   const router = useRouter();
   const [activeLayer, setActiveLayer] = useState("standard");
   const [selectedParcel, setSelectedParcel] = useState<LandParcel | null>(null);
   const [parcels, setParcels] = useState<LandParcel[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -48,8 +57,8 @@ export default function DashboardPage() {
               prop.risk_score > 70
                 ? "fire"
                 : prop.risk_score > 40
-                  ? "flood"
-                  : "healthy",
+                ? "flood"
+                : "healthy",
             area: prop.area_ha,
             damageEstimate:
               prop.risk_score > 50
@@ -70,40 +79,52 @@ export default function DashboardPage() {
     fetchProperties();
   }, [user]);
 
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/alerts`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setAlerts(data.alerts || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch alerts:", error);
+      }
+    };
+
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Automated Reports Simulation for High Severity Alerts
   useEffect(() => {
     // Helper to check if we already have a report for this alert (simplistic mock check)
     // In a real app the report would link to the alert ID.
     const hasReportForAlert = (alertId: string) => {
-      return reports.some(r => r.content.includes(alertId));
+      return reports.some((r) => r.content.includes(alertId));
     };
 
-    const highSeverityAlerts = mockAlerts.filter(a => a.severity === 'high');
+    const highSeverityAlerts = alerts.filter((a) => a.severity === "high");
 
-    highSeverityAlerts.forEach(alert => {
+    highSeverityAlerts.forEach((alert) => {
       // Requirement: "caz de alerta... automat un raport"
-      // Find if any user parcel matches the alert sector
-      // Simple string matching for demo purposes
-      const matchingParcel = parcels.find(p => alert.sector.includes(p.name) || p.name.includes(alert.sector));
-      // Fallback: randomly assign to a parcel if we want to force "demo" alerts for user 
-      // OR strictly only if sector matches.
-      // Given user wants "not all reports generated", we should be strict or at least ensure it's THEIR parcel.
-
-      // Let's try to match by partial name or region if possible.
-      // For the mock, simplest way: if we have parcels, pick one relevant, otherwise skip.
-      // To respect the user constraint "not all reports", we will ONLY generate if we find a match or if specific mock logic allows.
-
-      // Better logic for demo: If user has ANY parcels, and we have a high severity alert, 
-      // checking against a real "sector" map would be best. 
-      // For now: only generate if we can identify a likely impacted parcel.
-
-      if (matchingParcel && credits > 0 && !hasReportForAlert(alert.id)) {
+      // Check if we have credits
+      if (credits > 0 && !hasReportForAlert(alert.id)) {
+        // Create report
+        // We use a timeout to not flood immediately on mount, simulating "live" detection
         setTimeout(() => {
+          // Double check credits inside timeout
+          // We don't have access to fresh state here easily without ref, but good enough for mock simulation
+          // generateAutomatedReport handles credit decrement internally
+          // We just need to make sure we don't spam.
           if (Math.random() > 0.8) {
+            // Only trigger sometimes to simulate "new" alerts
             generateAutomatedReport(
               `Raport Automat: ${alert.type.toUpperCase()}`,
-              `Generat automat pentru alerta #${alert.id}: ${alert.message}. Afectează terenul: ${matchingParcel.name}`,
-              matchingParcel.id
+              `Generat automat pentru alerta #${alert.id}: ${alert.message}`
             );
           }
         }, 2000);
@@ -111,7 +132,8 @@ export default function DashboardPage() {
     });
 
     // NOTE: In a real implementation this would listen to a websocket or polling for NEW alerts.
-  }, [credits, reports, generateAutomatedReport, parcels]);
+    // Here we just use the mock list.
+  }, [credits, reports, generateAutomatedReport, alerts]);
 
   const currentNDVI =
     parcels.length > 0
@@ -155,7 +177,7 @@ export default function DashboardPage() {
       <div className="flex-1 relative rounded-xl overflow-hidden border border-slate-700">
         <MapWrapper
           parcels={parcels}
-          alerts={mockAlerts}
+          alerts={alerts}
           activeLayer={activeLayer}
           onParcelSelect={(parcel) => {
             setSelectedParcel(parcel);
@@ -169,10 +191,23 @@ export default function DashboardPage() {
           <div className="absolute top-4 left-4 right-16 z-[500] bg-slate-900/90 backdrop-blur px-4 py-3 rounded-lg border border-slate-700 shadow-xl animate-in slide-in-from-top-2">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Teren Selectat</p>
-                <h3 className="font-bold text-white text-lg">{selectedParcel.name}</h3>
+                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">
+                  Teren Selectat
+                </p>
+                <h3 className="font-bold text-white text-lg">
+                  {selectedParcel.name}
+                </h3>
                 <p className="text-sm text-slate-300">
-                  Status: <span className={selectedParcel.status === 'healthy' ? 'text-green-400' : 'text-orange-400'}>{selectedParcel.status}</span>
+                  Status:{" "}
+                  <span
+                    className={
+                      selectedParcel.status === "healthy"
+                        ? "text-green-400"
+                        : "text-orange-400"
+                    }
+                  >
+                    {selectedParcel.status}
+                  </span>
                 </p>
               </div>
               <Button
@@ -185,7 +220,21 @@ export default function DashboardPage() {
                 }}
               >
                 <span className="sr-only">Close</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
               </Button>
             </div>
           </div>
@@ -208,23 +257,44 @@ export default function DashboardPage() {
       </div>
 
       <div className="w-80 space-y-4 overflow-y-auto">
-
         {/* Reports Control Panel */}
         <div className="bg-slate-800/80 backdrop-blur border border-slate-700 rounded-xl p-4">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-white font-semibold flex items-center gap-2">
+              <h3 className="text-white font-semibold flex items-center gap-2">
                 <FileText className="h-4 w-4 text-green-500" />
                 Rapoarte
               </h3>
               {selectedParcel ? (
-                <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">{selectedParcel.activePackage || "Basic"} Plan</p>
+                <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">
+                  {selectedParcel.activePackage || "Basic"} Plan
+                </p>
               ) : (
-                activePackage && <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">{activePackage} ("Global")</p>
+                activePackage && (
+                  <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">
+                    {activePackage} ("Global")
+                  </p>
+                )
               )}
             </div>
-            <span className={`text-sm font-bold px-2 py-0.5 rounded ${(selectedParcel ? (selectedParcel.reportsLeft || 0) : credits) > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-              {selectedParcel ? (selectedParcel.reportsLeft || 0) : credits} / {selectedParcel ? (selectedParcel.activePackage === "Pro" ? 15 : selectedParcel.activePackage === "Enterprise" ? 30 : 5) : (totalReports > 0 ? totalReports : '-')}
+            <span
+              className={`text-sm font-bold px-2 py-0.5 rounded ${
+                (selectedParcel ? selectedParcel.reportsLeft || 0 : credits) > 0
+                  ? "bg-green-500/20 text-green-400"
+                  : "bg-red-500/20 text-red-400"
+              }`}
+            >
+              {selectedParcel ? selectedParcel.reportsLeft || 0 : credits} /{" "}
+              {selectedParcel
+                ? selectedParcel.activePackage === "Pro"
+                  ? 15
+                  : selectedParcel.activePackage === "Enterprise"
+                  ? 30
+                  : 5
+                : totalReports > 0
+                ? totalReports
+                : "-"}
             </span>
           </div>
 
@@ -234,47 +304,65 @@ export default function DashboardPage() {
                 if ((selectedParcel.reportsLeft || 0) > 0) {
                   addReport(
                     `Raport: ${selectedParcel.name}`,
-                    `Analiză detaliată pentru terenul ${selectedParcel.name} (${selectedParcel.area} ha). Status curent: ${selectedParcel.status}.`,
-                    "manual",
-                    selectedParcel.id
+                    `Analiză detaliată pentru terenul ${selectedParcel.name} (${selectedParcel.area} ha). Status curent: ${selectedParcel.status}.`
                   );
 
                   // Update local state for immediate feedback
-                  setParcels(prev => prev.map(p =>
-                    p.id === selectedParcel.id
-                      ? { ...p, reportsLeft: (p.reportsLeft || 0) - 1 }
-                      : p
-                  ));
-                  setSelectedParcel(prev => prev ? { ...prev, reportsLeft: (prev.reportsLeft || 0) - 1 } : null);
-
+                  setParcels((prev) =>
+                    prev.map((p) =>
+                      p.id === selectedParcel.id
+                        ? { ...p, reportsLeft: (p.reportsLeft || 0) - 1 }
+                        : p
+                    )
+                  );
+                  setSelectedParcel((prev) =>
+                    prev
+                      ? { ...prev, reportsLeft: (prev.reportsLeft || 0) - 1 }
+                      : null
+                  );
                 } else {
-                  alert(`Nu mai ai rapoarte disponibile pentru acest teren (${selectedParcel.name}).`);
-                  router.push('/dashboard/aboneaza-te'); // Use standard route
+                  alert(
+                    `Nu mai ai rapoarte disponibile pentru acest teren (${selectedParcel.name}).`
+                  );
+                  router.push("/dashboard/aboneaza-te"); // Use standard route
                 }
               } else {
                 // Global fallback (legacy or if logic requires it)
                 if (credits > 0) {
-                  alert("Vă rugăm selectați un teren de pe hartă pentru a genera raportul.");
+                  alert(
+                    "Vă rugăm selectați un teren de pe hartă pentru a genera raportul."
+                  );
                 } else {
                   alert("Nu mai ai rapoarte disponibile.");
-                  router.push('/aboneaza-te');
+                  router.push("/aboneaza-te");
                 }
               }
             }}
-            className={`w-full text-white mb-4 transition-all duration-200 ${selectedParcel ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-900/20' : 'bg-slate-700 hover:bg-slate-600'}`}
+            className={`w-full text-white mb-4 transition-all duration-200 ${
+              selectedParcel
+                ? "bg-green-600 hover:bg-green-700 shadow-lg shadow-green-900/20"
+                : "bg-slate-700 hover:bg-slate-600"
+            }`}
           >
             <Plus className="h-4 w-4 mr-2" />
-            {selectedParcel ? 'Generează Raport Teren' : 'Cere raport (Selectează teren)'}
+            {selectedParcel
+              ? "Generează Raport Teren"
+              : "Cere raport (Selectează teren)"}
           </Button>
 
           {/* Simulate Automated Report to test logic */}
           <Button
             onClick={() => {
               if (credits > 0) {
-                generateAutomatedReport("Alertă Automată Incendiu", "Detectat incendiu în Sectorul 4.");
+                generateAutomatedReport(
+                  "Alertă Automată Incendiu",
+                  "Detectat incendiu în Sectorul 4."
+                );
               } else {
-                alert("Nu mai ai rapoarte disponibile pentru procesare automată.");
-                router.push('/aboneaza-te');
+                alert(
+                  "Nu mai ai rapoarte disponibile pentru procesare automată."
+                );
+                router.push("/aboneaza-te");
               }
             }}
             variant="outline"
@@ -282,10 +370,37 @@ export default function DashboardPage() {
           >
             Simulează Alertă (Auto)
           </Button>
+
+          <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+            {reports.length === 0 ? (
+              <p className="text-xs text-slate-500 text-center py-2">
+                Nu există rapoarte generate.
+              </p>
+            ) : (
+              reports.map((report) => (
+                <div
+                  key={report.id}
+                  className="bg-slate-900/50 p-2 rounded border border-slate-700/50"
+                >
+                  <p className="text-xs text-slate-300 font-medium truncate">
+                    {report.title}
+                  </p>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-[10px] text-slate-500">
+                      {report.type === "automated" ? "Automat" : "Manual"}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {new Date(report.date).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         <HealthStats data={mockNDVIData} currentNDVI={currentNDVI} />
-        <AlertsPanel alerts={mockAlerts} />
+        <AlertsPanel alerts={alerts} />
         <ClaimsCard parcels={parcels} />
       </div>
 
