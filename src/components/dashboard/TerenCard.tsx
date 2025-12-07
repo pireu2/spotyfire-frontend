@@ -69,15 +69,7 @@ export default function TerenCard({
             {estimated_value.toLocaleString()} €
           </span>
         </div>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-slate-400">
-            <MapPin className="h-4 w-4" />
-            <span>Coordonate Centru</span>
-          </div>
-          <span className="text-white font-medium text-xs">
-            {center_lat.toFixed(4)}, {center_lng.toFixed(4)}
-          </span>
-        </div>
+
       </div>
       <div className="mt-4 pt-3 border-t border-slate-700">
         <div className="flex items-center justify-between mb-2">

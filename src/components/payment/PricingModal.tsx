@@ -126,6 +126,7 @@ export default function PricingModal({
                   className="mt-4 w-full bg-green-600 hover:bg-green-700"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setSelected(i);
                     setShowCheckout(true);
                   }}
                 >

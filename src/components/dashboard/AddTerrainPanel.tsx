@@ -515,14 +515,7 @@ export default function AddTerrainPanel({
                 </span>
               </div>
 
-              {center && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Centru</span>
-                  <span className="text-white font-medium text-xs">
-                    {center.lat.toFixed(4)}, {center.lng.toFixed(4)}
-                  </span>
-                </div>
-              )}
+
             </div>
           )}
 
@@ -597,13 +590,13 @@ export default function AddTerrainPanel({
             // Actually, simply: Longitude in Romania is 20-30, Latitude 43-48.
             // If p.geometry.coordinates[0][0][0] is < 40, it's likely Longitude.
             // Leaflet expects [lat, lng].
-            
+
             const ring = p.geometry.coordinates[0];
             if (ring.length > 0) {
               const firstPoint = ring[0];
               // If first component is < 40, it's longitude (20-30), second is latitude (40-48). We need [lat, lng].
               if (firstPoint[0] < 40) {
-                 return [ring.map(c => [c[1], c[0]] as [number, number])];
+                return [ring.map(c => [c[1], c[0]] as [number, number])];
               }
             }
             return [ring as [number, number][]];
