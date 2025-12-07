@@ -39,7 +39,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex relative overflow-hidden">
+    <div className="h-screen bg-slate-900 flex relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-green-900/40 via-slate-900 to-slate-950" />
       <div className="absolute inset-0 bg-green-glow" />
       <div className="absolute inset-0 bg-grid-pattern" />
@@ -86,7 +86,7 @@ export default function DashboardLayout({
           </Link>
         </div>
 
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             <li>
               <Link
