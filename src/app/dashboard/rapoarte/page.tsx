@@ -56,6 +56,8 @@ export default function ReportsPage() {
     useState<string>("");
   const [reportProgress, setReportProgress] = useState(0);
   const [reportSuccess, setReportSuccess] = useState(false);
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
 
   useEffect(() => {
     loadPropertiesAndAnalyses();
@@ -120,9 +122,21 @@ export default function ReportsPage() {
 
       setReportProgress(20);
 
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 10);
+      const endDate =
+        customEndDate ||
+        (() => {
+          const d = new Date();
+          d.setDate(d.getDate() - 7);
+          return d.toISOString().split("T")[0];
+        })();
+
+      const startDate =
+        customStartDate ||
+        (() => {
+          const d = new Date();
+          d.setDate(d.getDate() - 60);
+          return d.toISOString().split("T")[0];
+        })();
 
       setReportProgress(40);
 
@@ -135,8 +149,8 @@ export default function ReportsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            date_range_start: startDate.toISOString().split("T")[0],
-            date_range_end: endDate.toISOString().split("T")[0],
+            date_range_start: startDate,
+            date_range_end: endDate,
             cost_per_ha: 5000,
           }),
         }
@@ -262,38 +276,84 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex gap-3">
-                <select
-                  value={selectedPropertyForReport}
-                  onChange={(e) => setSelectedPropertyForReport(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
-                  disabled={generatingReport}
-                >
-                  <option value="">Selectează teren...</option>
-                  {properties.map((property) => (
-                    <option key={property.id} value={property.id}>
-                      {property.name} ({property.crop_type || "Necunoscut"})
-                    </option>
-                  ))}
-                </select>
-                <Button
-                  onClick={handleGenerateReport}
-                  disabled={!selectedPropertyForReport || generatingReport}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  {generatingReport ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generare...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Generează Raport
-                    </>
-                  )}
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="md:col-span-3">
+                  <label className="block text-sm text-slate-400 mb-2">
+                    Selectează Teren
+                  </label>
+                  <select
+                    value={selectedPropertyForReport}
+                    onChange={(e) =>
+                      setSelectedPropertyForReport(e.target.value)
+                    }
+                    className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
+                    disabled={generatingReport}
+                  >
+                    <option value="">Selectează teren...</option>
+                    {properties.map((property) => (
+                      <option key={property.id} value={property.id}>
+                        {property.name} ({property.crop_type || "Necunoscut"})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-400 mb-2">
+                    Data Start (Before)
+                  </label>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
+                    disabled={generatingReport}
+                    max={
+                      customEndDate || new Date().toISOString().split("T")[0]
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-slate-400 mb-2">
+                    Data Sfârșit (After)
+                  </label>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
+                    disabled={generatingReport}
+                    max={new Date().toISOString().split("T")[0]}
+                    min={customStartDate}
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <Button
+                    onClick={handleGenerateReport}
+                    disabled={!selectedPropertyForReport || generatingReport}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {generatingReport ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generare...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generează Raport
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
+
+              <p className="text-xs text-slate-500">
+                Lasă datele goale pentru perioada prestabilită (ultimele 60
+                zile, sfârșit 7 zile în urmă - pentru date satelit disponibile)
+              </p>
 
               {generatingReport && (
                 <div className="space-y-2">
