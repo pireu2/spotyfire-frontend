@@ -4,6 +4,7 @@ export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:800
 
 export async function getProperties(accessToken?: string): Promise<Property[]> {
   const response = await fetch(`${API_URL}/api/properties`, {
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
@@ -19,6 +20,7 @@ export async function getProperties(accessToken?: string): Promise<Property[]> {
 
 export async function getProperty(propertyId: string, accessToken?: string): Promise<Property> {
   const response = await fetch(`${API_URL}/api/properties/${propertyId}`, {
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
@@ -35,6 +37,7 @@ export async function getProperty(propertyId: string, accessToken?: string): Pro
 export async function createProperty(data: CreatePropertyRequest, accessToken?: string): Promise<Property> {
   const response = await fetch(`${API_URL}/api/properties`, {
     method: 'POST',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
@@ -52,6 +55,7 @@ export async function createProperty(data: CreatePropertyRequest, accessToken?: 
 export async function updateProperty(propertyId: string, data: UpdatePropertyRequest, accessToken?: string): Promise<Property> {
   const response = await fetch(`${API_URL}/api/properties/${propertyId}`, {
     method: 'PATCH',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
@@ -69,6 +73,7 @@ export async function updateProperty(propertyId: string, data: UpdatePropertyReq
 export async function deleteProperty(propertyId: string, accessToken?: string): Promise<void> {
   const response = await fetch(`${API_URL}/api/properties/${propertyId}`, {
     method: 'DELETE',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),

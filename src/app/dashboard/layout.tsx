@@ -193,12 +193,7 @@ export default function DashboardLayout({
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg">
-              <Home className="h-4 w-4 text-slate-400" />
-              <span className="text-sm text-slate-300">
-                Fermă Demo - București
-              </span>
-            </div>
+
             {user && (
               <div className="relative">
                 <button

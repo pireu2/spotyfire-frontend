@@ -51,6 +51,8 @@ const getCropLabel = (cropType: string) => {
   return labels[cropType.toLowerCase()] || cropType;
 };
 
+import DeleteConfirmationModal from "@/components/dashboard/DeleteConfirmationModal";
+
 export default function TerenuriPage() {
   const user = useUser();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -59,6 +61,10 @@ export default function TerenuriPage() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [renewProperty, setRenewProperty] = useState<Property | null>(null);
+  
+  // New state for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
 
   const fetchProperties = async () => {
     try {
@@ -81,16 +87,23 @@ export default function TerenuriPage() {
     }
   }, [user]);
 
-  const handleDelete = async (propertyId: string) => {
-    if (!confirm("Ești sigur că vrei să ștergi acest teren?")) return;
+  const handleDeleteClick = (property: Property) => {
+    setPropertyToDelete(property);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!propertyToDelete) return;
 
     try {
-      setDeletingId(propertyId);
+      setDeletingId(propertyToDelete.id);
       const accessToken = await user
         ?.getAuthJson()
         .then((auth) => auth?.accessToken);
-      await deleteProperty(propertyId, accessToken || undefined);
-      setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+      await deleteProperty(propertyToDelete.id, accessToken || undefined);
+      setProperties((prev) => prev.filter((p) => p.id !== propertyToDelete.id));
+      setShowDeleteConfirm(false);
+      setPropertyToDelete(null);
     } catch (error) {
       console.error("Failed to delete property:", error);
     } finally {
@@ -169,6 +182,7 @@ export default function TerenuriPage() {
                   key={property.id}
                   property={property}
                   onRenew={() => handleRenew(property)}
+                  onDelete={() => handleDeleteClick(property)}
                 />
               ))}
             </div>
@@ -184,6 +198,13 @@ export default function TerenuriPage() {
           onPaymentSuccess={handleRenewSuccess}
         />
       )}
+      <DeleteConfirmationModal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        propertyName={propertyToDelete?.name}
+        isDeleting={!!deletingId}
+      />
     </div>
   );
 }
