@@ -89,24 +89,21 @@ export default function AiAssistant() {
         ?.getAuthJson()
         .then((auth) => auth?.accessToken);
 
-      const response = await fetch(
-        `${API_URL}/api/chat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-          },
-          body: JSON.stringify({
-            message: userMessage.content,
-            context: null,
-            conversation_history: messages.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          context: null,
+          conversation_history: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to get response");
@@ -160,7 +157,7 @@ export default function AiAssistant() {
       {isOpen && (
         <div
           ref={chatRef}
-          className="fixed top-4 right-4 bottom-4 w-[45vw] min-w-[350px] max-w-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-9999 overflow-hidden"
+          className="fixed top-4 pt-20 right-4 bottom-4 w-[45vw] min-w-[350px] max-w-[500px] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 flex flex-col z-9999 overflow-hidden"
         >
           <div className="bg-green-600 p-4 flex items-center justify-between select-none">
             <div className="flex items-center gap-2">
@@ -205,14 +202,16 @@ export default function AiAssistant() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${message.role === "user"
+                  className={`max-w-[85%] rounded-2xl px-4 py-2 ${
+                    message.role === "user"
                       ? "bg-green-600 text-white rounded-br-md"
                       : "bg-slate-800 text-slate-200 rounded-bl-md"
-                    }`}
+                  }`}
                 >
                   {message.role === "assistant" ? (
                     <div

@@ -47,10 +47,10 @@ export default function DashboardLayout({
       <div className="absolute inset-0 bg-green-glow" />
       <div className="absolute inset-0 bg-grid-pattern" />
       <div className="absolute inset-0 bg-noise pointer-events-none" />
-      
+
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -84,11 +84,17 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside className={`
+      <aside
+        className={`
         fixed md:relative inset-y-0 left-0 z-50 w-64 bg-slate-900/95 backdrop-blur border-r border-slate-700 
         flex flex-col transition-transform duration-300 ease-in-out
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-      `}>
+        ${
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full md:translate-x-0"
+        }
+      `}
+      >
         <div className="h-20 h-20 border-b border-slate-700 flex items-center justify-center relative">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -101,7 +107,7 @@ export default function DashboardLayout({
             />
           </Link>
           {/* Mobile Close Button */}
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="absolute right-4 top-1/2 -translate-y-1/2 md:hidden text-slate-400 hover:text-white"
           >
@@ -201,9 +207,9 @@ export default function DashboardLayout({
       </aside>
 
       <main className="flex-1 flex flex-col relative z-10 w-full">
-        <header className="h-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-[50]">
+        <header className="h-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-[100]">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(true)}
               className="md:hidden text-slate-400 hover:text-white"
             >
@@ -250,7 +256,7 @@ export default function DashboardLayout({
                       {user.primaryEmail}
                     </p>
                   </div>
-                   <button
+                  <button
                     onClick={() => {
                       setShowProfileMenu(false);
                       setShowLogoutConfirm(true);
