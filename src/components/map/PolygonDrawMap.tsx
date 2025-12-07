@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -72,18 +72,23 @@ function MapClickHandler({
   coordinates,
   setCoordinates,
   onPolygonChange,
+  setRedoStack,
 }: {
   coordinates: { lat: number; lng: number }[];
   setCoordinates: React.Dispatch<
     React.SetStateAction<{ lat: number; lng: number }[]>
   >;
   onPolygonChange: PolygonDrawMapProps["onPolygonChange"];
+  setRedoStack: React.Dispatch<
+    React.SetStateAction<{ lat: number; lng: number }[]>
+  >;
 }) {
   useMapEvents({
     click: (e) => {
       const newCoord = { lat: e.latlng.lat, lng: e.latlng.lng };
       const newCoords = [...coordinates, newCoord];
       setCoordinates(newCoords);
+      setRedoStack([]); // Clear redo stack on new input
 
       const area = calculatePolygonArea(newCoords);
       const center = calculateCenter(newCoords);
@@ -103,20 +108,73 @@ export default function PolygonDrawMap({
     { lat: number; lng: number }[]
   >(initialPolygon || []);
 
+  const [redoStack, setRedoStack] = useState<{ lat: number; lng: number }[]>(
+    []
+  );
+
   useEffect(() => {
     if (initialPolygon && initialPolygon.length > 0) {
       setCoordinates(initialPolygon);
+      setRedoStack([]);
       const area = calculatePolygonArea(initialPolygon);
       const center = calculateCenter(initialPolygon);
       onPolygonChange(initialPolygon, area, center);
     } else {
       setCoordinates([]);
+      setRedoStack([]);
     }
   }, [initialPolygon]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Undo: Ctrl+Z or Command+Z
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key.toLowerCase() === "z" &&
+        !e.shiftKey
+      ) {
+        e.preventDefault();
+        if (coordinates.length > 0) {
+          const lastPoint = coordinates[coordinates.length - 1];
+          const newCoords = coordinates.slice(0, -1);
+          setCoordinates(newCoords);
+          setRedoStack((prev) => [...prev, lastPoint]); // Push to redo stack
+
+          const area = calculatePolygonArea(newCoords);
+          const center = calculateCenter(newCoords);
+          onPolygonChange(newCoords, area, center);
+        }
+      }
+
+      // Redo: Ctrl+Y or Command+Y (or Ctrl+Shift+Z)
+      if (
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "z")
+      ) {
+        e.preventDefault();
+        if (redoStack.length > 0) {
+          const pointToRestore = redoStack[redoStack.length - 1];
+          const newRedoStack = redoStack.slice(0, -1);
+          setRedoStack(newRedoStack);
+
+          const newCoords = [...coordinates, pointToRestore];
+          setCoordinates(newCoords);
+
+          const area = calculatePolygonArea(newCoords);
+          const center = calculateCenter(newCoords);
+          onPolygonChange(newCoords, area, center);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [coordinates, redoStack, onPolygonChange]);
 
   const handleMarkerClick = (index: number) => {
     const newCoords = coordinates.filter((_, i) => i !== index);
     setCoordinates(newCoords);
+    setRedoStack([]);
 
     const area = calculatePolygonArea(newCoords);
     const center = calculateCenter(newCoords);
@@ -149,20 +207,28 @@ export default function PolygonDrawMap({
           coordinates={coordinates}
           setCoordinates={setCoordinates}
           onPolygonChange={onPolygonChange}
+          setRedoStack={setRedoStack}
         />
 
         {/* Existing Polygons Layer */}
         {existingPolygons.map((polygonCoords, index) => {
-          // Validation: Ensure we have at least one ring with points
-          if (
-            !polygonCoords ||
-            !Array.isArray(polygonCoords) ||
-            polygonCoords.length === 0 ||
-            !polygonCoords[0] ||
-            polygonCoords[0].length === 0
-          ) {
-            return null;
-          }
+          // Flatten standard [lng, lat] arrays if needed, but assuming [lat, lng] for now
+          // Strict validation to prevent crashing Leaflet
+          const isValid =
+            Array.isArray(polygonCoords) &&
+            polygonCoords.length > 0 &&
+            Array.isArray(polygonCoords[0]) &&
+            polygonCoords[0].length > 0 &&
+            // Check deep validity of first point (Arrays or Objects)
+            ((Array.isArray(polygonCoords[0][0]) &&
+              (typeof polygonCoords[0][0][0] === "number" ||
+                ("lat" in (polygonCoords[0][0] as any) &&
+                  "lng" in (polygonCoords[0][0] as any)))) ||
+              typeof polygonCoords[0][0] === "number" ||
+              ("lat" in (polygonCoords[0][0] as any) &&
+                "lng" in (polygonCoords[0][0] as any)));
+
+          if (!isValid) return null;
 
           return (
             <Polygon
