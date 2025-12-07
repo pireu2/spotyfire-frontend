@@ -293,10 +293,6 @@ export default function ReportsPage() {
                     disabled={generatingReport}
                     max={new Date().toISOString().split("T")[0]}
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    Sistemul va analiza perioada de 3 luni înainte de incident
-                    până în prezent
-                  </p>
                 </div>
 
                 <div className="flex items-end">
