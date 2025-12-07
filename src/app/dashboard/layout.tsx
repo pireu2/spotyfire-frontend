@@ -116,19 +116,6 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="/dashboard/test-satellite"
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/dashboard/test-satellite"
-                    ? "bg-green-600/20 text-green-500 font-medium"
-                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
-                }`}
-              >
-                <Satellite className="h-5 w-5" />
-                Test Satelit
-              </Link>
-            </li>
-            <li>
-              <Link
                 href="/dashboard/alerte"
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
               >

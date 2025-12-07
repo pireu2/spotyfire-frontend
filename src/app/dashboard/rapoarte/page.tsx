@@ -1,120 +1,486 @@
 "use client";
 
-import { useReports } from "@/context/ReportsContext";
+import { useState, useEffect } from "react";
+import { useUser } from "@stackframe/stack";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, AlertCircle, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  FileText,
+  Download,
+  Eye,
+  AlertCircle,
+  Loader2,
+  MapPin,
+  CheckCircle,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import dynamic from "next/dynamic";
+
+const AnalysisDetailModal = dynamic(
+  () => import("@/components/dashboard/AnalysisDetailModal"),
+  {
+    ssr: false,
+  }
+);
+
+interface Analysis {
+  id: string;
+  damage_percent: number;
+  damaged_area_ha: number;
+  estimated_cost: number;
+  date_range_start: string;
+  date_range_end: string;
+  created_at: string;
+}
+
+interface Property {
+  id: string;
+  name: string;
+  crop_type: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ReportsPage() {
-  const { credits, totalReports, activePackage, reports, requestReport } = useReports();
-  const router = useRouter();
+  const user = useUser();
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [analyses, setAnalyses] = useState<{ [key: string]: Analysis[] }>({});
+  const [loading, setLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<{
+    id: string;
+    propertyName: string;
+  } | null>(null);
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [selectedPropertyForReport, setSelectedPropertyForReport] =
+    useState<string>("");
+  const [reportProgress, setReportProgress] = useState(0);
+  const [reportSuccess, setReportSuccess] = useState(false);
 
-  const handleRequestReport = () => {
-    if (credits > 0) {
-      requestReport("Raport Manual Solicitat", "Analiză detaliată a terenului.");
-    } else {
-      // Should be handled by UI state, but safe guard
-      alert("Nu mai aveți rapoarte disponibile.");
+  useEffect(() => {
+    loadPropertiesAndAnalyses();
+  }, [user]);
+
+  const loadPropertiesAndAnalyses = async () => {
+    try {
+      const token = await user?.getAuthJson();
+      const accessToken = token?.accessToken;
+
+      if (!accessToken) return;
+
+      setAccessToken(accessToken);
+
+      const propertiesResponse = await fetch(`${API_URL}/api/properties`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!propertiesResponse.ok) throw new Error("Failed to load properties");
+
+      const propertiesData = await propertiesResponse.json();
+      setProperties(propertiesData);
+
+      const analysesMap: { [key: string]: Analysis[] } = {};
+
+      for (const property of propertiesData) {
+        const analysesResponse = await fetch(
+          `${API_URL}/api/properties/${property.id}/analyses`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+
+        if (analysesResponse.ok) {
+          const analysesData = await analysesResponse.json();
+          analysesMap[property.id] = analysesData;
+        }
+      }
+
+      setAnalyses(analysesMap);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const navigateToPayment = () => {
-    router.push("/dashboard/aboneaza-te");
+  const handleGenerateReport = async () => {
+    if (!selectedPropertyForReport) {
+      return;
+    }
+
+    setGeneratingReport(true);
+    setReportProgress(0);
+    setReportSuccess(false);
+
+    try {
+      const token = await user?.getAuthJson();
+      const accessToken = token?.accessToken;
+
+      if (!accessToken) return;
+
+      setReportProgress(20);
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 10);
+
+      setReportProgress(40);
+
+      const response = await fetch(
+        `${API_URL}/api/properties/${selectedPropertyForReport}/analyze`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date_range_start: startDate.toISOString().split("T")[0],
+            date_range_end: endDate.toISOString().split("T")[0],
+            cost_per_ha: 5000,
+          }),
+        }
+      );
+
+      setReportProgress(70);
+
+      if (!response.ok) throw new Error("Failed to generate analysis");
+
+      setReportProgress(90);
+      await loadPropertiesAndAnalyses();
+      setReportProgress(100);
+      setReportSuccess(true);
+      setSelectedPropertyForReport("");
+
+      setTimeout(() => {
+        setReportSuccess(false);
+        setReportProgress(0);
+      }, 3000);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      setReportProgress(0);
+    } finally {
+      setGeneratingReport(false);
+    }
   };
+
+  const handleDownloadReport = async (
+    analysisId: string,
+    propertyName: string
+  ) => {
+    setDownloadingId(analysisId);
+    try {
+      const token = await user?.getAuthJson();
+      const accessToken = token?.accessToken;
+
+      if (!accessToken) return;
+
+      const response = await fetch(
+        `${API_URL}/api/analyses/${analysisId}/report`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to download report");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `raport_${propertyName.replace(/\s/g, "_")}_${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      alert("Eroare la descărcarea raportului");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleViewOverlay = async (analysisId: string) => {
+    try {
+      const token = await user?.getAuthJson();
+      const accessToken = token?.accessToken;
+
+      if (!accessToken) return;
+
+      const response = await fetch(
+        `${API_URL}/api/analyses/${analysisId}/overlay`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to load overlay");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Error viewing overlay:", error);
+      alert("Eroare la vizualizarea overlay-ului");
+    }
+  };
+
+  const totalAnalyses = Object.values(analyses).reduce(
+    (sum, arr) => sum + arr.length,
+    0
+  );
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-           <h1 className="text-2xl font-bold text-white mb-2">Gestionare Rapoarte</h1>
-           <p className="text-slate-400 text-sm">Vizualizează și generează rapoarte pentru terenurile tale.</p>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Rapoarte Analiză Satelit
+          </h1>
+          <p className="text-slate-400 text-sm">
+            Descarcă rapoarte PDF cu analiza deteriorării terenurilor
+          </p>
         </div>
-        
-        {/* Stats Widget */}
-         <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl px-6 py-3 flex items-center gap-6">
-             <div className="text-right">
-                 <p className="text-xs text-slate-400 uppercase tracking-wider">Pachet Activ</p>
-                 <p className="text-green-400 font-bold">{activePackage || "Niciunul"}</p>
-             </div>
-             <div className="h-8 w-px bg-slate-700"></div>
-             <div className="text-right">
-                 <p className="text-xs text-slate-400 uppercase tracking-wider">Disponibile</p>
-                 <p className={`font-bold ${credits === 0 ? "text-red-500" : "text-white"}`}>
-                    {credits} <span className="text-slate-500 text-sm">/ {totalReports}</span>
-                 </p>
-             </div>
-         </div>
+
+        <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl px-6 py-3">
+          <p className="text-xs text-slate-400 uppercase tracking-wider">
+            Total Analize
+          </p>
+          <p className="text-2xl font-bold text-green-400">{totalAnalyses}</p>
+        </div>
       </div>
 
-      {credits === 0 && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 flex flex-col items-center justify-center text-center space-y-4">
-            <div className="h-12 w-12 bg-red-500/20 rounded-full flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-red-500" />
+      {properties.length > 0 && (
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">
+              Generează Raport Nou
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <select
+                  value={selectedPropertyForReport}
+                  onChange={(e) => setSelectedPropertyForReport(e.target.value)}
+                  className="flex-1 bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
+                  disabled={generatingReport}
+                >
+                  <option value="">Selectează teren...</option>
+                  {properties.map((property) => (
+                    <option key={property.id} value={property.id}>
+                      {property.name} ({property.crop_type || "Necunoscut"})
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  onClick={handleGenerateReport}
+                  disabled={!selectedPropertyForReport || generatingReport}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {generatingReport ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generare...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Generează Raport
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {generatingReport && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-400">
+                      Procesare analiză satelit...
+                    </span>
+                    <span className="text-green-400 font-semibold">
+                      {reportProgress}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-linear-to-r from-green-600 to-green-400 h-full transition-all duration-500 ease-out"
+                      style={{ width: `${reportProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {reportProgress < 40 && "Inițializare analiză..."}
+                    {reportProgress >= 40 &&
+                      reportProgress < 70 &&
+                      "Procesare imagini satelit..."}
+                    {reportProgress >= 70 &&
+                      reportProgress < 100 &&
+                      "Calculare deteriorare..."}
+                    {reportProgress === 100 && "Finalizare..."}
+                  </p>
+                </div>
+              )}
+
+              {reportSuccess && (
+                <div className="flex items-center gap-2 text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-3">
+                  <CheckCircle className="h-5 w-5" />
+                  <span className="font-medium">
+                    Raport generat cu succes! Verifică lista de mai jos.
+                  </span>
+                </div>
+              )}
             </div>
-            <div>
-                <h3 className="text-xl font-bold text-white">Ați rămas fără rapoarte disponibile</h3>
-                <p className="text-slate-400 max-w-md mt-1">
-                    Pachetul dumneavoastră curent a epuizat numărul de rapoarte incluse. 
-                    Pentru a genera rapoarte noi, vă rugăm să actualizați pachetul.
-                </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+        </div>
+      ) : totalAnalyses === 0 ? (
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardContent className="pt-12 pb-12">
+            <div className="text-center text-slate-400">
+              <FileText className="h-16 w-16 mx-auto mb-4 opacity-20" />
+              <p className="text-lg mb-2">Nu există analize disponibile</p>
+              <p className="text-sm">
+                Mergi la secțiunea "Test Satelit" pentru a genera prima analiză
+              </p>
             </div>
-            <Button 
-                onClick={navigateToPayment}
-                className="bg-green-600 hover:bg-green-700 text-white gap-2"
-            >
-                <RefreshCw className="h-4 w-4" />
-                Reabonează-te
-            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {properties.map((property) => {
+            const propertyAnalyses = analyses[property.id] || [];
+            if (propertyAnalyses.length === 0) return null;
+
+            return (
+              <Card
+                key={property.id}
+                className="bg-slate-800/50 border-slate-700"
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-green-500" />
+                    {property.name}
+                    <span className="text-sm text-slate-400 font-normal ml-2">
+                      ({property.crop_type || "Necunoscut"})
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {propertyAnalyses.map((analysis) => (
+                      <div
+                        key={analysis.id}
+                        className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="text-white font-medium">
+                                Analiză{" "}
+                                {new Date(
+                                  analysis.created_at
+                                ).toLocaleDateString("ro-RO")}
+                              </span>
+                              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-400">
+                                {analysis.date_range_start} →{" "}
+                                {analysis.date_range_end}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <span className="text-slate-400">
+                                  Deteriorare:
+                                </span>
+                                <span className="text-red-400 font-semibold ml-2">
+                                  {analysis.damage_percent?.toFixed(2)}%
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400">
+                                  Zonă afectată:
+                                </span>
+                                <span className="text-orange-400 font-semibold ml-2">
+                                  {analysis.damaged_area_ha?.toFixed(2)} ha
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400">
+                                  Cost estimat:
+                                </span>
+                                <span className="text-yellow-400 font-semibold ml-2">
+                                  {analysis.estimated_cost?.toLocaleString()}{" "}
+                                  RON
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 ml-4">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                              onClick={() =>
+                                setSelectedAnalysis({
+                                  id: analysis.id,
+                                  propertyName: property.name,
+                                })
+                              }
+                            >
+                              <MapPin className="h-4 w-4 mr-1" />
+                              Hartă
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                              onClick={() => handleViewOverlay(analysis.id)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Overlay
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() =>
+                                handleDownloadReport(analysis.id, property.name)
+                              }
+                              disabled={downloadingId === analysis.id}
+                            >
+                              {downloadingId === analysis.id ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4 mr-1" />
+                              )}
+                              PDF
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
-      <Card className="bg-slate-800/50 border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg text-white flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-slate-400" />
-                  Istoric Rapoarte
-              </CardTitle>
-              {credits > 0 && (
-                  <Button onClick={handleRequestReport} className="bg-slate-700 hover:bg-slate-600 text-white">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Cere Raport Nou
-                  </Button>
-              )}
-          </CardHeader>
-          <CardContent>
-              {reports.length === 0 ? (
-                  <div className="text-center py-12 text-slate-500">
-                      <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                      <p>Nu există rapoarte generate momentan.</p>
-                  </div>
-              ) : (
-                  <div className="space-y-4">
-                      {reports.map((report) => (
-                          <div key={report.id} className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 flex items-center justify-between hover:border-slate-700 transition-colors">
-                              <div className="flex items-start gap-3">
-                                  <div className={`p-2 rounded-lg ${report.type === 'automated' ? 'bg-orange-500/10 text-orange-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                                      <FileText className="h-5 w-5" />
-                                  </div>
-                                  <div>
-                                      <h4 className="text-white font-medium">{report.title}</h4>
-                                      <p className="text-sm text-slate-400 mt-1">{report.content}</p>
-                                  </div>
-                              </div>
-                              <div className="text-right">
-                                  <span className={`text-xs px-2 py-1 rounded-full ${report.type === 'automated' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                                      {report.type === 'automated' ? 'Automat (Alertă)' : 'Manual'}
-                                  </span>
-                                  <p className="text-xs text-slate-500 mt-2">
-                                      {report.date.toLocaleDateString("ro-RO")} • {report.date.toLocaleTimeString("ro-RO")}
-                                  </p>
-                              </div>
-                          </div>
-                      ))}
-                  </div>
-              )}
-          </CardContent>
-      </Card>
+      {selectedAnalysis && (
+        <AnalysisDetailModal
+          analysisId={selectedAnalysis.id}
+          propertyName={selectedAnalysis.propertyName}
+          accessToken={accessToken}
+          onClose={() => setSelectedAnalysis(null)}
+        />
+      )}
     </div>
   );
 }
