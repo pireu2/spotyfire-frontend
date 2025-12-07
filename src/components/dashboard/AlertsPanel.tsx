@@ -91,11 +91,6 @@ export default function AlertsPanel({ alerts }: AlertsPanelProps) {
         <CardTitle className="text-white flex items-center gap-2 text-lg">
           <AlertTriangle className="h-5 w-5 text-orange-500" />
           Alerte Active
-          {!isLoading && (
-            <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
-              {alerts.filter((a) => a.severity === "high").length}
-            </span>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
