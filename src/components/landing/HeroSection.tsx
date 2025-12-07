@@ -165,7 +165,7 @@ export default function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="bg-white text-black hover:bg-slate-700 hover:text-white border-slate-600 text-lg px-8 py-6"
+              className="bg-slate-300 text-green-600 hover:bg-white hover:text-green-600 border-slate-400 text-lg px-8 py-6"
             >
               Află Mai Multe
             </Button>
