@@ -56,8 +56,7 @@ export default function ReportsPage() {
     useState<string>("");
   const [reportProgress, setReportProgress] = useState(0);
   const [reportSuccess, setReportSuccess] = useState(false);
-  const [customStartDate, setCustomStartDate] = useState<string>("");
-  const [customEndDate, setCustomEndDate] = useState<string>("");
+  const [incidentDate, setIncidentDate] = useState<string>("");
 
   useEffect(() => {
     loadPropertiesAndAnalyses();
@@ -106,7 +105,7 @@ export default function ReportsPage() {
   };
 
   const handleGenerateReport = async () => {
-    if (!selectedPropertyForReport) {
+    if (!selectedPropertyForReport || !incidentDate) {
       return;
     }
 
@@ -122,22 +121,6 @@ export default function ReportsPage() {
 
       setReportProgress(20);
 
-      const endDate =
-        customEndDate ||
-        (() => {
-          const d = new Date();
-          d.setDate(d.getDate() - 7);
-          return d.toISOString().split("T")[0];
-        })();
-
-      const startDate =
-        customStartDate ||
-        (() => {
-          const d = new Date();
-          d.setDate(d.getDate() - 60);
-          return d.toISOString().split("T")[0];
-        })();
-
       setReportProgress(40);
 
       const response = await fetch(
@@ -149,8 +132,7 @@ export default function ReportsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            date_range_start: startDate,
-            date_range_end: endDate,
+            incident_date: incidentDate,
             cost_per_ha: 5000,
           }),
         }
@@ -165,6 +147,7 @@ export default function ReportsPage() {
       setReportProgress(100);
       setReportSuccess(true);
       setSelectedPropertyForReport("");
+      setIncidentDate("");
 
       setTimeout(() => {
         setReportSuccess(false);
@@ -255,7 +238,7 @@ export default function ReportsPage() {
             Rapoarte Analiză Satelit
           </h1>
           <p className="text-slate-400 text-sm">
-            Descarcă rapoarte PDF cu analiza deteriorării terenurilor
+            Analizează deteriorarea terenurilor pe baza unei date de incident
           </p>
         </div>
 
@@ -300,39 +283,30 @@ export default function ReportsPage() {
 
                 <div>
                   <label className="block text-sm text-slate-400 mb-2">
-                    Data Start (Before)
+                    Data Incident
                   </label>
                   <input
                     type="date"
-                    value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
-                    disabled={generatingReport}
-                    max={
-                      customEndDate || new Date().toISOString().split("T")[0]
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-slate-400 mb-2">
-                    Data Sfârșit (After)
-                  </label>
-                  <input
-                    type="date"
-                    value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    value={incidentDate}
+                    onChange={(e) => setIncidentDate(e.target.value)}
                     className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg px-4 py-2"
                     disabled={generatingReport}
                     max={new Date().toISOString().split("T")[0]}
-                    min={customStartDate}
                   />
+                  <p className="text-xs text-slate-500 mt-1">
+                    Sistemul va analiza perioada de 3 luni înainte de incident
+                    până în prezent
+                  </p>
                 </div>
 
                 <div className="flex items-end">
                   <Button
                     onClick={handleGenerateReport}
-                    disabled={!selectedPropertyForReport || generatingReport}
+                    disabled={
+                      !selectedPropertyForReport ||
+                      !incidentDate ||
+                      generatingReport
+                    }
                     className="w-full bg-green-600 hover:bg-green-700"
                   >
                     {generatingReport ? (
@@ -407,7 +381,6 @@ export default function ReportsPage() {
             <div className="text-center text-slate-400">
               <FileText className="h-16 w-16 mx-auto mb-4 opacity-20" />
               <p className="text-lg mb-2">Nu există analize disponibile</p>
-
             </div>
           </CardContent>
         </Card>
@@ -443,9 +416,9 @@ export default function ReportsPage() {
                             <div className="flex flex-wrap items-center gap-3 mb-2">
                               <span className="text-white font-medium">
                                 Analiză{" "}
-                                {new Date(analysis.created_at).toLocaleDateString(
-                                  "ro-RO"
-                                )}
+                                {new Date(
+                                  analysis.created_at
+                                ).toLocaleDateString("ro-RO")}
                               </span>
                               <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 whitespace-nowrap">
                                 {analysis.date_range_start} →{" "}
