@@ -21,15 +21,16 @@ const getAlertIcon = (type: Alert["type"]) => {
   }
 };
 
-const getSeverityColor = (severity: Alert["severity"]) => {
-  switch (severity) {
-    case "high":
-      return "border-l-red-500 bg-red-500/10";
-    case "medium":
-      return "border-l-orange-500 bg-orange-500/10";
-    default:
-      return "border-l-yellow-500 bg-yellow-500/10";
+const getSeverityColor = (severity: string) => {
+  const normalizedSeverity = severity?.toLowerCase();
+  if (["high", "critical", "severe", "extreme"].includes(normalizedSeverity)) {
+    return "border-l-red-500 bg-red-500/10";
   }
+  if (["medium", "moderate", "warning"].includes(normalizedSeverity)) {
+    return "border-l-orange-500 bg-orange-500/10";
+  }
+  // Low or unknown
+  return "border-l-yellow-500 bg-yellow-500/10";
 };
 
 const formatTime = (date: Date) => {
