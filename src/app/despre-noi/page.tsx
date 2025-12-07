@@ -233,10 +233,10 @@ export default function DesprePage() {
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative flex items-center justify-center">
               {/* Abstract Visual Representation of the Solution */}
               <div className="aspect-square rounded-full bg-green-500/10 absolute -top-20 -right-20 blur-3xl w-full" />
-              <div className="grid gap-6 relative z-10">
+              <div className="relative z-10 w-full">
                 <div className="bg-slate-800/80 backdrop-blur p-8 rounded-3xl border border-green-500/30 shadow-2xl">
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
@@ -279,12 +279,6 @@ export default function DesprePage() {
                     <span className="text-slate-400 text-sm">Index Fertilitate</span>
                     <span className="text-2xl font-black text-white">8.4<span className="text-sm text-slate-500 font-normal">/10</span></span>
                   </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-600 to-green-800 p-8 rounded-3xl text-white shadow-xl relative overflow-hidden flex flex-col justify-center">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-                  <h3 className="text-2xl font-bold mb-2">Despăgubiri Rapide</h3>
-                  <p className="text-green-100">Generăm automat dosarul cu toate dovezile necesare.</p>
                 </div>
               </div>
             </div>
