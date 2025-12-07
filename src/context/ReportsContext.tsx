@@ -8,9 +8,10 @@ export interface Report {
   date: Date;
   type: "manual" | "automated";
   content: string;
+  propertyId?: string;
 }
 
-export type PackageType = "Basic" | "Pro" | "Enterprise";
+export type PackageType = "Basic" | "Pro" | "Enterprise" | "Per Raport";
 
 interface ReportsContextType {
   credits: number; // Available reports
@@ -19,9 +20,9 @@ interface ReportsContextType {
   reports: Report[];
   addCredits: (amount: number) => void;
   activatePackage: (pkg: PackageType, hectares: number) => void;
-  requestReport: (title: string, content: string) => boolean;
-  addReport: (title: string, content: string, type?: "manual" | "automated") => void;
-  generateAutomatedReport: (title: string, content: string) => void;
+  requestReport: (title: string, content: string, propertyId?: string) => boolean;
+  addReport: (title: string, content: string, type?: "manual" | "automated", propertyId?: string) => void;
+  generateAutomatedReport: (title: string, content: string, propertyId?: string) => void;
   calculatePrice: (pkg: PackageType, hectares: number) => number;
 }
 
@@ -44,7 +45,7 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
     if (savedCredits) setCredits(parseInt(savedCredits, 10));
     if (savedTotal) setTotalReports(parseInt(savedTotal, 10));
     if (savedPackage) setActivePackage(savedPackage as PackageType);
-    
+
     if (savedReports) {
       try {
         const parsed = JSON.parse(savedReports);
@@ -80,19 +81,26 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
       case "Basic": reportCount = 5; break;
       case "Pro": reportCount = 15; break;
       case "Enterprise": reportCount = 30; break;
+      case "Per Raport": reportCount = 1; break; // Assumed 1 for single report purchase
     }
-    
+
+    // specific logic for Per Raport: it might just add credits if intended as an add-on,
+    // but for now sticking to the interface which sets active package.
+    // If user wants it as add-on, we might need different logic, but following the 'popup as Alege Basic' instruction:
     setActivePackage(pkg);
     setTotalReports(reportCount);
-    setCredits(reportCount); // Reset credits to full package limits
+    // If it's Per Raport, maybe we shouldn't reset credits if we want to keep previous? 
+    // But sticking to simple replacement for now as per current function contract.
+    setCredits(reportCount);
   };
 
   const calculatePrice = (pkg: PackageType, hectares: number): number => {
     let basePrice = 0;
     switch (pkg) {
-      case "Basic": basePrice = 9; break;
-      case "Pro": basePrice = 29; break;
-      case "Enterprise": basePrice = 99; break;
+      case "Basic": basePrice = 29; break;
+      case "Pro": basePrice = 99; break;
+      case "Enterprise": basePrice = 299; break;
+      case "Per Raport": return 20; // Fixed price for Per Raport
     }
 
     if (hectares <= 20) {
@@ -109,7 +117,7 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
     return parseFloat((basePrice + extraCost).toFixed(2));
   };
 
-  const requestReport = (title: string, content: string): boolean => {
+  const requestReport = (title: string, content: string, propertyId?: string): boolean => {
     if (credits <= 0) return false;
 
     const newReport: Report = {
@@ -118,6 +126,7 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
       date: new Date(),
       type: "manual",
       content,
+      propertyId,
     };
 
     setCredits((prev) => prev - 1);
@@ -125,29 +134,31 @@ export function ReportsProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  const generateAutomatedReport = (title: string, content: string) => {
+  const generateAutomatedReport = (title: string, content: string, propertyId?: string) => {
     const newReport: Report = {
       id: crypto.randomUUID(),
       title,
       date: new Date(),
       type: "automated",
       content,
+      propertyId,
     };
-    
+
     if (credits > 0) {
-        setCredits((prev) => prev - 1);
+      setCredits((prev) => prev - 1);
     }
-    
+
     setReports((prev) => [newReport, ...prev]);
   };
 
-  const addReport = (title: string, content: string, type: "manual" | "automated" = "manual") => {
+  const addReport = (title: string, content: string, type: "manual" | "automated" = "manual", propertyId?: string) => {
     const newReport: Report = {
       id: crypto.randomUUID(),
       title,
       date: new Date(),
       type,
       content,
+      propertyId,
     };
     setReports((prev) => [newReport, ...prev]);
   };

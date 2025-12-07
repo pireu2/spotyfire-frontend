@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "../ui/badge";
-import { MapPin, Euro, SquareIcon, RefreshCw } from "lucide-react";
+import { MapPin, Euro, SquareIcon, RefreshCw, Trash2 } from "lucide-react";
 
 const PACKAGE_REPORTS: Record<string, number> = {
   Basic: 5,
@@ -13,9 +13,11 @@ const PACKAGE_REPORTS: Record<string, number> = {
 export default function TerenCard({
   property,
   onRenew,
+  onDelete,
 }: {
   property: any;
   onRenew: () => void;
+  onDelete: () => void;
 }) {
   const {
     name,
@@ -35,9 +37,18 @@ export default function TerenCard({
           <h3 className="font-semibold text-white">{name}</h3>
           <p className="text-sm text-slate-400">{crop_type}</p>
         </div>
-        <Badge className="bg-green-600 text-white text-xs px-2 py-1 rounded-lg">
-          {activePackage}
-        </Badge>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-slate-400 hover:text-red-500 hover:bg-red-500/10 h-8 w-8 p-0"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          title="Șterge Teren"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
@@ -58,21 +69,13 @@ export default function TerenCard({
             {estimated_value.toLocaleString()} €
           </span>
         </div>
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-slate-400">
-            <MapPin className="h-4 w-4" />
-            <span>Coordonate Centru</span>
-          </div>
-          <span className="text-white font-medium text-xs">
-            {center_lat.toFixed(4)}, {center_lng.toFixed(4)}
-          </span>
-        </div>
+
       </div>
       <div className="mt-4 pt-3 border-t border-slate-700">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-slate-500">Rapoarte rămase</span>
           <span className="text-xs font-bold text-green-400">
-            {reportsLeft} / {PACKAGE_REPORTS[activePackage]}
+            {reportsLeft} / {PACKAGE_REPORTS[activePackage] || 5}
           </span>
         </div>
         {reportsLeft === 0 && (

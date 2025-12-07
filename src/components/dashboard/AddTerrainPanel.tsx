@@ -12,7 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CreatePropertyRequest } from "@/types";
+import { CreatePropertyRequest, Property } from "@/types";
 import { createProperty, API_URL } from "@/lib/api";
 import { useUser } from "@stackframe/stack";
 import dynamic from "next/dynamic";
@@ -25,7 +25,7 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
-  mapKey?: number;
+  existingPolygons?: [number, number][][][];
 }
 
 const PolygonDrawMap = dynamic<PolygonDrawMapProps>(
@@ -54,22 +54,34 @@ interface CadastralData {
 interface AddTerrainPanelProps {
   onClose: () => void;
   onSuccess: () => void;
+  existingProperties?: Property[];
 }
 
 const CROP_TYPES = [
-  { value: "grau", label: "Grâu" },
-  { value: "porumb", label: "Porumb" },
-  { value: "floarea_soarelui", label: "Floarea Soarelui" },
-  { value: "rapita", label: "Rapiță" },
-  { value: "orz", label: "Orz" },
-  { value: "soia", label: "Soia" },
-  { value: "vie", label: "Vie" },
-  { value: "livada", label: "Livadă" },
-  { value: "legume", label: "Legume" },
-  { value: "altele", label: "Altele" },
+  { value: "grau", label: "Grâu - 48€/ha" },
+  { value: "porumb", label: "Porumb - 6.5€/ha" },
+  { value: "floarea_soarelui", label: "Floarea Soarelui - 90€/ha" },
+  { value: "rapita", label: "Rapiță - 140€/ha" },
+  { value: "orz", label: "Orz - 90€/ha" },
+  { value: "soia", label: "Soia - 150€/ha" },
+  { value: "vie", label: "Vie - 120€/ha" },
+  { value: "livada", label: "Livadă - 100€/ha" },
+  { value: "legume", label: "Legume - 150€/ha" },
+  { value: "altele", label: "Altele - 100€/ha" },
 ];
 
-const PRICE_PER_HA = 5000;
+const CROP_PRICES: Record<string, number> = {
+  grau: 48,
+  porumb: 6.5,
+  floarea_soarelui: 90,
+  rapita: 140,
+  orz: 90,
+  soia: 150,
+  vie: 120,
+  livada: 100,
+  legume: 150,
+  altele: 100,
+};
 
 const LOADING_MESSAGES = [
   "Se conectează la ANCPI...",
@@ -77,6 +89,7 @@ const LOADING_MESSAGES = [
   "Se preiau datele geometrice...",
   "Se procesează coordonatele...",
   "Se finalizează preluarea datelor...",
+  "Se optimizează datele...",
 ];
 
 type InputMode = "cadastral" | "draw";
@@ -84,6 +97,7 @@ type InputMode = "cadastral" | "draw";
 export default function AddTerrainPanel({
   onClose,
   onSuccess,
+  existingProperties = [],
 }: AddTerrainPanelProps) {
   const user = useUser();
   const [isLoading, setIsLoading] = useState(false);
@@ -108,7 +122,8 @@ export default function AddTerrainPanel({
     null
   );
 
-  const estimatedValue = area * PRICE_PER_HA;
+  const pricePerHa = CROP_PRICES[cropType] || 1000;
+  const estimatedValue = area * pricePerHa;
 
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [pendingRequestData, setPendingRequestData] =
@@ -500,14 +515,7 @@ export default function AddTerrainPanel({
                 </span>
               </div>
 
-              {center && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Centru</span>
-                  <span className="text-white font-medium text-xs">
-                    {center.lat.toFixed(4)}, {center.lng.toFixed(4)}
-                  </span>
-                </div>
-              )}
+
             </div>
           )}
 
@@ -522,7 +530,7 @@ export default function AddTerrainPanel({
               {estimatedValue.toLocaleString()} €
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              Calculat la {PRICE_PER_HA.toLocaleString()} €/ha
+              Calcul: {pricePerHa}€ x {area.toFixed(2)} ha
             </p>
           </div>
 
@@ -575,6 +583,24 @@ export default function AddTerrainPanel({
         <PolygonDrawMap
           onPolygonChange={handlePolygonChange}
           initialPolygon={cadastralFetched ? coordinates : undefined}
+          existingPolygons={existingProperties.map((p) => {
+            if (!p.geometry || !p.geometry.coordinates || !p.geometry.coordinates[0]) return [];
+            // Basic heuristic: check if first point looks like [lng, lat] (lng ~ 20-30 for Ro, lat ~ 44-48)
+            // If coordinate[0] (lng candidate) < coordinate[1] (lat candidate) in Romania, it's likely [lng, lat]
+            // Actually, simply: Longitude in Romania is 20-30, Latitude 43-48.
+            // If p.geometry.coordinates[0][0][0] is < 40, it's likely Longitude.
+            // Leaflet expects [lat, lng].
+
+            const ring = p.geometry.coordinates[0];
+            if (ring.length > 0) {
+              const firstPoint = ring[0];
+              // If first component is < 40, it's longitude (20-30), second is latitude (40-48). We need [lat, lng].
+              if (firstPoint[0] < 40) {
+                return [ring.map(c => [c[1], c[0]] as [number, number])];
+              }
+            }
+            return [ring as [number, number][]];
+          })}
         />
         {inputMode === "cadastral" && !cadastralFetched && (
           <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
