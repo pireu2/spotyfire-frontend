@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -72,18 +72,23 @@ function MapClickHandler({
   coordinates,
   setCoordinates,
   onPolygonChange,
+  setRedoStack,
 }: {
   coordinates: { lat: number; lng: number }[];
   setCoordinates: React.Dispatch<
     React.SetStateAction<{ lat: number; lng: number }[]>
   >;
   onPolygonChange: PolygonDrawMapProps["onPolygonChange"];
+  setRedoStack: React.Dispatch<
+    React.SetStateAction<{ lat: number; lng: number }[]>
+  >;
 }) {
   useMapEvents({
     click: (e) => {
       const newCoord = { lat: e.latlng.lat, lng: e.latlng.lng };
       const newCoords = [...coordinates, newCoord];
       setCoordinates(newCoords);
+      setRedoStack([]); // Clear redo stack on new input
 
       const area = calculatePolygonArea(newCoords);
       const center = calculateCenter(newCoords);
@@ -103,20 +108,73 @@ export default function PolygonDrawMap({
     { lat: number; lng: number }[]
   >(initialPolygon || []);
 
+  const [redoStack, setRedoStack] = useState<{ lat: number; lng: number }[]>(
+    []
+  );
+
   useEffect(() => {
     if (initialPolygon && initialPolygon.length > 0) {
       setCoordinates(initialPolygon);
+      setRedoStack([]);
       const area = calculatePolygonArea(initialPolygon);
       const center = calculateCenter(initialPolygon);
       onPolygonChange(initialPolygon, area, center);
     } else {
       setCoordinates([]);
+      setRedoStack([]);
     }
   }, [initialPolygon]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Undo: Ctrl+Z or Command+Z
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key.toLowerCase() === "z" &&
+        !e.shiftKey
+      ) {
+        e.preventDefault();
+        if (coordinates.length > 0) {
+          const lastPoint = coordinates[coordinates.length - 1];
+          const newCoords = coordinates.slice(0, -1);
+          setCoordinates(newCoords);
+          setRedoStack((prev) => [...prev, lastPoint]); // Push to redo stack
+
+          const area = calculatePolygonArea(newCoords);
+          const center = calculateCenter(newCoords);
+          onPolygonChange(newCoords, area, center);
+        }
+      }
+
+      // Redo: Ctrl+Y or Command+Y (or Ctrl+Shift+Z)
+      if (
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") ||
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "z")
+      ) {
+        e.preventDefault();
+        if (redoStack.length > 0) {
+          const pointToRestore = redoStack[redoStack.length - 1];
+          const newRedoStack = redoStack.slice(0, -1);
+          setRedoStack(newRedoStack);
+
+          const newCoords = [...coordinates, pointToRestore];
+          setCoordinates(newCoords);
+
+          const area = calculatePolygonArea(newCoords);
+          const center = calculateCenter(newCoords);
+          onPolygonChange(newCoords, area, center);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [coordinates, redoStack, onPolygonChange]);
 
   const handleMarkerClick = (index: number) => {
     const newCoords = coordinates.filter((_, i) => i !== index);
     setCoordinates(newCoords);
+    setRedoStack([]);
 
     const area = calculatePolygonArea(newCoords);
     const center = calculateCenter(newCoords);
@@ -129,80 +187,98 @@ export default function PolygonDrawMap({
   ];
 
   return (
-    <MapContainer
-      center={[45.9432, 24.9668]}
-      zoom={7}
-      minZoom={7}
-      maxZoom={18}
-      maxBounds={romaniaBounds}
-      maxBoundsViscosity={1.0}
-      className="h-full w-full"
-      style={{ background: "#1e293b" }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <div className="h-full w-full relative">
+      <MapContainer
+        center={[45.9432, 24.9668]}
+        zoom={7}
+        minZoom={7}
+        maxZoom={18}
+        maxBounds={romaniaBounds}
+        maxBoundsViscosity={1.0}
+        className="h-full w-full"
+        style={{ background: "#1e293b" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-      <MapClickHandler
-        coordinates={coordinates}
-        setCoordinates={setCoordinates}
-        onPolygonChange={onPolygonChange}
-      />
+        <MapClickHandler
+          coordinates={coordinates}
+          setCoordinates={setCoordinates}
+          onPolygonChange={onPolygonChange}
+          setRedoStack={setRedoStack}
+        />
 
-      {/* Existing Polygons Layer */}
-      {existingPolygons.map((polygonCoords, index) => {
-        // Validation: Ensure we have at least one ring with points
-        if (!polygonCoords || !Array.isArray(polygonCoords) || polygonCoords.length === 0 || !polygonCoords[0] || polygonCoords[0].length === 0) {
-          return null;
-        }
+        {/* Existing Polygons Layer */}
+        {existingPolygons.map((polygonCoords, index) => {
+          // Flatten standard [lng, lat] arrays if needed, but assuming [lat, lng] for now
+          // Strict validation to prevent crashing Leaflet
+          const isValid =
+            Array.isArray(polygonCoords) &&
+            polygonCoords.length > 0 &&
+            Array.isArray(polygonCoords[0]) &&
+            polygonCoords[0].length > 0 &&
+            // Check deep validity of first point (Arrays or Objects)
+            ((Array.isArray(polygonCoords[0][0]) &&
+              (typeof polygonCoords[0][0][0] === "number" ||
+                ("lat" in (polygonCoords[0][0] as any) &&
+                  "lng" in (polygonCoords[0][0] as any)))) ||
+              typeof polygonCoords[0][0] === "number" ||
+              ("lat" in (polygonCoords[0][0] as any) &&
+                "lng" in (polygonCoords[0][0] as any)));
 
-        return (
+          if (!isValid) return null;
+
+          return (
+            <Polygon
+              key={`existing-${index}`}
+              positions={polygonCoords as any}
+              pathOptions={{
+                color: "#059669", // Green (matches "Sănătos" status)
+                fillColor: "#059669",
+                fillOpacity: 0.4,
+                weight: 3,
+                interactive: false,
+              }}
+            />
+          );
+        })}
+
+        {coordinates.length >= 3 && (
           <Polygon
-            key={`existing-${index}`}
-            positions={polygonCoords as any}
+            positions={coordinates.map(
+              (c) => [c.lat, c.lng] as [number, number]
+            )}
             pathOptions={{
-              color: "#059669", // Green (matches "Sănătos" status)
-              fillColor: "#059669",
-              fillOpacity: 0.4,
-              weight: 3,
-              interactive: false,
+              color: "#10b981",
+              fillColor: "#10b981",
+              fillOpacity: 0.3,
+              weight: 2,
             }}
           />
-        );
-      })}
+        )}
 
-      {coordinates.length >= 3 && (
-        <Polygon
-          positions={coordinates.map((c) => [c.lat, c.lng] as [number, number])}
-          pathOptions={{
-            color: "#10b981",
-            fillColor: "#10b981",
-            fillOpacity: 0.3,
-            weight: 2,
-          }}
-        />
-      )}
-
-      {coordinates.map((coord, index) => (
-        <Marker
-          key={index}
-          position={[coord.lat, coord.lng]}
-          icon={markerIcon}
-          eventHandlers={{
-            click: () => handleMarkerClick(index),
-          }}
-        />
-      ))}
+        {coordinates.map((coord, index) => (
+          <Marker
+            key={index}
+            position={[coord.lat, coord.lng]}
+            icon={markerIcon}
+            eventHandlers={{
+              click: () => handleMarkerClick(index),
+            }}
+          />
+        ))}
+      </MapContainer>
 
       {coordinates.length > 0 && coordinates.length < 3 && (
-        <div className="absolute bottom-4 left-4 z-1000 bg-orange-500/20 backdrop-blur px-3 py-2 rounded-lg border border-orange-500/50">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-orange-500/20 backdrop-blur px-3 py-2 rounded-lg border border-orange-500/50 pointer-events-none">
           <p className="text-xs text-orange-400">
             Mai ai nevoie de {3 - coordinates.length} punct
             {coordinates.length === 2 ? "" : "e"}
           </p>
         </div>
       )}
-    </MapContainer>
+    </div>
   );
 }

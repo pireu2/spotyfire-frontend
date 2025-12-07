@@ -14,29 +14,37 @@ import CheckoutModal from "./CheckoutModal";
 const PACKAGES = [
   {
     name: "Basic",
-    price: 9,
+    price: 29,
     reports: 5,
-    features: ["5 rapoarte incluse", "Monitorizare NDVI", "Alerte incendiu"],
+    features: ["monitorizare pentru până la 20 ha", "5 rapoarte/lună", "overview teren", "alerte"],
   },
   {
     name: "Pro",
-    price: 29,
+    price: 99,
     reports: 15,
     features: [
-      "15 rapoarte incluse",
-      "Monitorizare NDVI avansată",
-      "Alerte incendiu/inundație",
-      "Export PDF",
+      "monitorizare pentru până la 20 ha",
+      "15 rapoarte/lună",
+      "Chat AI complet",
+      "overview teren",
+      "detectare dezastre automată",
+      "alerte",
     ],
   },
   {
     name: "Enterprise",
-    price: 99,
-    reports: 50,
+    price: 299,
+    reports: 30, // Updated to 30 based on image
     features: [
-      "50 rapoarte incluse",
-      "Toate funcțiile Pro",
-      "Suport prioritar",
+      "monitorizare pentru până la 20 ha",
+      "30 rapoarte/lună",
+      "Chat AI complet",
+      "overview teren",
+      "alerte",
+      "analize personalizate",
+      "detectare dezastre automată",
+      "estimare pagube",
+      "upload date proprii",
     ],
   },
 ];
@@ -71,7 +79,7 @@ export default function PricingModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden [&>button>svg]:w-6 [&>button>svg]:h-6">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-2xl font-bold text-center">
             Alege pachetul pentru terenul tău
@@ -81,11 +89,10 @@ export default function PricingModal({
           {PACKAGES.map((p, i) => (
             <div
               key={p.name}
-              className={`rounded-2xl border ${
-                selected === i
-                  ? "border-green-600 bg-green-50/5"
-                  : "border-slate-700 bg-slate-800"
-              } p-6 flex flex-col items-center transition-colors`}
+              className={`rounded-2xl border ${selected === i
+                ? "border-green-600 bg-green-50/5"
+                : "border-slate-700 bg-slate-800"
+                } p-6 flex flex-col items-center transition-colors`}
               onClick={() => setSelected(i)}
               style={{ cursor: "pointer" }}
             >
@@ -109,30 +116,26 @@ export default function PricingModal({
                   </li>
                 ))}
               </ul>
-              {areaHa > 20 && (
-                <div className="text-xs text-orange-400 mt-2 text-center">
-                  +{extra.toFixed(2)}€ pentru {areaHa - 20} ha suplimentare
-                </div>
-              )}
-              <Button
-                className="mt-4 w-full bg-green-600 hover:bg-green-700"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowCheckout(true);
-                }}
-              >
-                Alege {p.name}
-              </Button>
+              <div className="mt-auto w-full">
+                {areaHa > 20 && (
+                  <div className="text-xs text-orange-400 mt-2 text-center">
+                    +{extra.toFixed(2)}€ pentru {(areaHa - 20).toFixed(2)} ha suplimentare
+                  </div>
+                )}
+                <Button
+                  className="mt-4 w-full bg-green-600 hover:bg-green-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowCheckout(true);
+                  }}
+                >
+                  Alege {p.name}
+                </Button>
+              </div>
             </div>
           ))}
         </div>
-        <Button
-          variant="ghost"
-          className="absolute top-4 right-4 text-slate-400 hover:text-red-500"
-          onClick={onClose}
-        >
-          <X className="h-5 w-5" />
-        </Button>
+
         <CheckoutModal
           open={showCheckout}
           onClose={() => setShowCheckout(false)}
