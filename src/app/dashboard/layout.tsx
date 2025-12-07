@@ -14,6 +14,8 @@ import {
   MapPin,
   Home,
   Settings,
+  Menu,
+  X,
 } from "lucide-react";
 import { useUser } from "@stackframe/stack";
 import { useState } from "react";
@@ -31,6 +33,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await user?.signOut();
@@ -44,8 +47,17 @@ export default function DashboardLayout({
       <div className="absolute inset-0 bg-green-glow" />
       <div className="absolute inset-0 bg-grid-pattern" />
       <div className="absolute inset-0 bg-noise pointer-events-none" />
+      
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-9999 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
           <div className="bg-slate-800 rounded-2xl p-6 max-w-sm w-full border border-slate-700">
             <h3 className="text-xl font-semibold text-white mb-4 text-center">
               Confirmare Deconectare
@@ -72,8 +84,12 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside className="w-64 bg-slate-900/95 backdrop-blur border-r border-slate-700 flex flex-col relative z-20">
-        <div className="h-20 h-20 border-b border-slate-700 flex items-center justify-center">
+      <aside className={`
+        fixed md:relative inset-y-0 left-0 z-50 w-64 bg-slate-900/95 backdrop-blur border-r border-slate-700 
+        flex flex-col transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+      `}>
+        <div className="h-20 h-20 border-b border-slate-700 flex items-center justify-center relative">
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/spotyfire-logo-full.png"
@@ -84,6 +100,13 @@ export default function DashboardLayout({
               className="h-12 w-auto"
             />
           </Link>
+          {/* Mobile Close Button */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 md:hidden text-slate-400 hover:text-white"
+          >
+            <X className="h-6 w-6" />
+          </button>
         </div>
 
         <nav className="flex-1 p-4 overflow-y-auto">
@@ -91,6 +114,7 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   pathname === "/dashboard"
                     ? "bg-green-600/20 text-green-500 font-medium"
@@ -104,6 +128,7 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard/terenuri"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   pathname === "/dashboard/terenuri"
                     ? "bg-green-600/20 text-green-500 font-medium"
@@ -114,22 +139,11 @@ export default function DashboardLayout({
                 Terenuri
               </Link>
             </li>
-            <li>
-              <Link
-                href="/dashboard/test-satellite"
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  pathname === "/dashboard/test-satellite"
-                    ? "bg-green-600/20 text-green-500 font-medium"
-                    : "text-slate-400 hover:bg-slate-700 hover:text-white"
-                }`}
-              >
-                <Satellite className="h-5 w-5" />
-                Test Satelit
-              </Link>
-            </li>
+
             <li>
               <Link
                 href="/dashboard/alerte"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
               >
                 <Bell className="h-5 w-5" />
@@ -139,6 +153,7 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard/rapoarte"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   pathname === "dashboard/rapoarte"
                     ? "bg-green-600/20 text-green-500 font-medium"
@@ -152,6 +167,7 @@ export default function DashboardLayout({
             <li>
               <Link
                 href="/dashboard/aboneaza-te"
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                   pathname === "/dashboard/aboneaza-te"
                     ? "bg-green-600/20 text-green-500 font-medium"
@@ -184,15 +200,23 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col relative z-10">
-        <header className="h-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-[5000]">
-          <div>
-            <h1 className="text-lg font-semibold text-white">
-              Dashboard Monitorizare
-            </h1>
-            <p className="text-xs text-slate-400">
-              Ultima actualizare: acum 2 minute
-            </p>
+      <main className="flex-1 flex flex-col relative z-10 w-full">
+        <header className="h-20 bg-slate-900/95 backdrop-blur border-b border-slate-700 flex items-center justify-between px-6 relative z-[50]">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden text-slate-400 hover:text-white"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <div>
+              <h1 className="text-lg font-semibold text-white">
+                Dashboard Monitorizare
+              </h1>
+              <p className="text-xs text-slate-400">
+                Ultima actualizare: acum 2 minute
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             {user && (
@@ -226,7 +250,7 @@ export default function DashboardLayout({
                       {user.primaryEmail}
                     </p>
                   </div>
-                  <button
+                   <button
                     onClick={() => {
                       setShowProfileMenu(false);
                       setShowLogoutConfirm(true);
@@ -242,7 +266,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-auto relative">{children}</div>
+        <div className="flex-1 overflow-auto relative z-0">{children}</div>
       </main>
     </div>
   );

@@ -344,8 +344,9 @@ export default function AddTerrainPanel({
   };
 
   return (
-    <div className="flex h-full w-full">
-      <div className="w-100 bg-slate-800 border-r border-slate-700 flex flex-col">
+    <div className="flex flex-col md:flex-row h-full w-full">
+      {/* Form Section - Order 2 on mobile (bottom), Order 1 on desktop (left) */}
+      <div className="w-full md:w-[400px] h-[55%] md:h-full bg-slate-800 border-t md:border-t-0 md:border-r border-slate-700 flex flex-col order-2 md:order-1">
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
             <MapPin className="h-5 w-5 text-green-500" />
@@ -603,7 +604,8 @@ export default function AddTerrainPanel({
         </div>
       </div>
 
-      <div className="flex-1 relative">
+      {/* Map Section - Order 1 on mobile (top), Order 2 on desktop (right) */}
+      <div className="flex-1 relative h-[45%] md:h-full order-1 md:order-2">
         <PolygonDrawMap
           onPolygonChange={handlePolygonChange}
           initialPolygon={cadastralFetched ? coordinates : undefined}

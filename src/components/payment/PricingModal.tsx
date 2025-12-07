@@ -79,7 +79,7 @@ export default function PricingModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden [&>button>svg]:w-6 [&>button>svg]:h-6">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden [&>button>svg]:w-6 [&>button>svg]:h-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="text-2xl font-bold text-center">
             Alege pachetul pentru terenul tău

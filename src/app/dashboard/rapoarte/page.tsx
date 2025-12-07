@@ -407,9 +407,7 @@ export default function ReportsPage() {
             <div className="text-center text-slate-400">
               <FileText className="h-16 w-16 mx-auto mb-4 opacity-20" />
               <p className="text-lg mb-2">Nu există analize disponibile</p>
-              <p className="text-sm">
-                Mergi la secțiunea "Test Satelit" pentru a genera prima analiză
-              </p>
+
             </div>
           </CardContent>
         </Card>
@@ -440,21 +438,21 @@ export default function ReportsPage() {
                         key={analysis.id}
                         className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors"
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                          <div className="flex-1 w-full">
+                            <div className="flex flex-wrap items-center gap-3 mb-2">
                               <span className="text-white font-medium">
                                 Analiză{" "}
-                                {new Date(
-                                  analysis.created_at
-                                ).toLocaleDateString("ro-RO")}
+                                {new Date(analysis.created_at).toLocaleDateString(
+                                  "ro-RO"
+                                )}
                               </span>
-                              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-400">
+                              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 whitespace-nowrap">
                                 {analysis.date_range_start} →{" "}
                                 {analysis.date_range_end}
                               </span>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4 text-sm">
                               <div>
                                 <span className="text-slate-400">
                                   Deteriorare:
@@ -482,11 +480,11 @@ export default function ReportsPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex gap-2 ml-4">
+                          <div className="flex gap-2 w-full md:w-auto md:ml-4 overflow-x-auto pb-1 md:pb-0">
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                              className="border-slate-600 text-slate-300 hover:bg-slate-700 flex-1 md:flex-none"
                               onClick={() =>
                                 setSelectedAnalysis({
                                   id: analysis.id,
@@ -500,7 +498,7 @@ export default function ReportsPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                              className="border-slate-600 text-slate-300 hover:bg-slate-700 flex-1 md:flex-none"
                               onClick={() => handleViewOverlay(analysis.id)}
                             >
                               <Eye className="h-4 w-4 mr-1" />
@@ -508,7 +506,7 @@ export default function ReportsPage() {
                             </Button>
                             <Button
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none"
                               onClick={() =>
                                 handleDownloadReport(analysis.id, property.name)
                               }

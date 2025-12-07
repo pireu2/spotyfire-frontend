@@ -91,7 +91,7 @@ export default function AlertePage() {
   return (
     <div className="container mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold text-white mb-8">Alerte Active</h1>
-      <div className="flex gap-3 mb-8">
+      <div className="flex gap-3 mb-8 overflow-x-auto pb-2 whitespace-nowrap">
         {alertTypes.map((type) => (
           <button
             key={type.value}

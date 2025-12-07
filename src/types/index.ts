@@ -64,6 +64,9 @@ export interface Alert {
   timestamp: Date;
   sector: string;
   severity: 'low' | 'medium' | 'high';
+  lat?: number;
+  lng?: number;
+  created_at?: string;
 }
 
 export interface ChatMessage {

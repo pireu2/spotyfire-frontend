@@ -173,8 +173,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] p-4 flex gap-4">
-      <div className="flex-1 relative rounded-xl overflow-hidden border border-slate-700">
+    <div className="h-auto md:h-[calc(100vh-4rem)] p-4 flex flex-col md:flex-row gap-4 overflow-y-auto md:overflow-hidden">
+      <div className="w-full md:flex-1 h-[400px] md:h-auto relative rounded-xl overflow-hidden border border-slate-700 shrink-0">
         <MapWrapper
           parcels={parcels}
           alerts={alerts}
@@ -256,7 +256,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="w-80 space-y-4 overflow-y-auto">
+      <div className="w-full md:w-80 space-y-4 md:overflow-y-auto">
         <HealthStats data={mockNDVIData} currentNDVI={currentNDVI} />
         <AlertsPanel alerts={alerts} />
         <ClaimsCard parcels={parcels} />
