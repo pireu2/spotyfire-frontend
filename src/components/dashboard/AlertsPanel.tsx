@@ -21,15 +21,16 @@ const getAlertIcon = (type: Alert["type"]) => {
   }
 };
 
-const getSeverityColor = (severity: Alert["severity"]) => {
-  switch (severity) {
-    case "high":
-      return "border-l-red-500 bg-red-500/10";
-    case "medium":
-      return "border-l-orange-500 bg-orange-500/10";
-    default:
-      return "border-l-yellow-500 bg-yellow-500/10";
+const getSeverityColor = (severity: string) => {
+  const normalizedSeverity = severity?.toLowerCase();
+  if (["high", "critical", "severe", "extreme"].includes(normalizedSeverity)) {
+    return "border-l-red-500 bg-red-500/10";
   }
+  if (["medium", "moderate", "warning"].includes(normalizedSeverity)) {
+    return "border-l-orange-500 bg-orange-500/10";
+  }
+  // Low or unknown
+  return "border-l-yellow-500 bg-yellow-500/10";
 };
 
 const formatTime = (date: Date) => {
@@ -90,11 +91,6 @@ export default function AlertsPanel({ alerts }: AlertsPanelProps) {
         <CardTitle className="text-white flex items-center gap-2 text-lg">
           <AlertTriangle className="h-5 w-5 text-orange-500" />
           Alerte Active
-          {!isLoading && (
-            <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
-              {alerts.filter((a) => a.severity === "high").length}
-            </span>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
