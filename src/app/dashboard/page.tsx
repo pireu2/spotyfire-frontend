@@ -261,7 +261,7 @@ export default function DashboardPage() {
         <div className="bg-slate-800/80 backdrop-blur border border-slate-700 rounded-xl p-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-white font-semibold flex items-center gap-2">
+
               <h3 className="text-white font-semibold flex items-center gap-2">
                 <FileText className="h-4 w-4 text-green-500" />
                 Rapoarte

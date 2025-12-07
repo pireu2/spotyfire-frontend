@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ComponentType } from "react";
+import { useState, ComponentType, useMemo } from "react";
 import {
   X,
   Loader2,
@@ -128,6 +128,33 @@ export default function AddTerrainPanel({
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [pendingRequestData, setPendingRequestData] =
     useState<CreatePropertyRequest | null>(null);
+
+  const existingPolygonsFormatted = useMemo(() => {
+    return existingProperties.map((p) => {
+      if (
+        !p.geometry ||
+        !p.geometry.coordinates ||
+        !p.geometry.coordinates[0]
+      ) {
+        return { coordinates: [], name: p.name };
+      }
+
+      const ring = p.geometry.coordinates[0];
+      let coords: any = ring;
+
+      if (ring.length > 0) {
+        const firstPoint = ring[0];
+        // Heuristic: if first component < 40, likely [lng, lat], swap to [lat, lng]
+        if (firstPoint[0] < 40) {
+          coords = ring.map((c: any) => [c[1], c[0]]);
+        }
+      }
+      return {
+        coordinates: [coords],
+        name: p.name,
+      };
+    });
+  }, [existingProperties]);
 
   const handlePaymentSuccess = async (pkg: string, reports: number) => {
     if (!pendingRequestData) return;
@@ -580,30 +607,7 @@ export default function AddTerrainPanel({
         <PolygonDrawMap
           onPolygonChange={handlePolygonChange}
           initialPolygon={cadastralFetched ? coordinates : undefined}
-          existingPolygons={existingProperties.map((p) => {
-            if (
-              !p.geometry ||
-              !p.geometry.coordinates ||
-              !p.geometry.coordinates[0]
-            )
-              // Return empty coords but valid name to satisfy types, though map won't render empty coords
-              return { coordinates: [], name: p.name };
-
-            const ring = p.geometry.coordinates[0];
-            let coords: any = ring;
-
-            if (ring.length > 0) {
-              const firstPoint = ring[0];
-              // Heuristic: if first component < 40, likely [lng, lat], swap to [lat, lng]
-              if (firstPoint[0] < 40) {
-                coords = ring.map((c) => [c[1], c[0]]);
-              }
-            }
-            return {
-              coordinates: [coords],
-              name: p.name,
-            };
-          })}
+          existingPolygons={existingPolygonsFormatted}
         />
         {inputMode === "cadastral" && !cadastralFetched && (
           <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
