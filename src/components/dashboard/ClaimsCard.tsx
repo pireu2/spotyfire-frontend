@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, Download, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FileText, Download, CheckCircle, Clock, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LandParcel } from "@/types";
+import { getPropertySubscription, decrementPropertyReports } from "@/lib/propertySubscription";
+import Link from "next/link";
 
 interface ClaimsCardProps {
   parcels: LandParcel[];
@@ -13,6 +15,8 @@ interface ClaimsCardProps {
 export default function ClaimsCard({ parcels }: ClaimsCardProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
+  const [reportsAvailable, setReportsAvailable] = useState(true);
+  const [totalReportsLeft, setTotalReportsLeft] = useState(0);
 
   const damagedParcels = parcels.filter((p) => p.status !== "healthy");
   const totalDamage = damagedParcels.reduce(
@@ -21,9 +25,49 @@ export default function ClaimsCard({ parcels }: ClaimsCardProps) {
   );
   const totalArea = damagedParcels.reduce((acc, p) => acc + p.area, 0);
 
+  // Check reports availability on mount and when parcels change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    let totalLeft = 0;
+    damagedParcels.forEach((parcel) => {
+      const subscription = getPropertySubscription(parcel.id);
+      if (subscription) {
+        totalLeft += subscription.reportsLeft;
+      } else if (parcel.reportsLeft !== undefined) {
+        totalLeft += parcel.reportsLeft;
+      }
+    });
+    
+    setTotalReportsLeft(totalLeft);
+    setReportsAvailable(totalLeft > 0);
+  }, [parcels, damagedParcels, reportGenerated]);
+
   const handleGenerateReport = async () => {
+    // Find a parcel with reports remaining
+    const parcelWithReports = damagedParcels.find((p) => {
+      const sub = getPropertySubscription(p.id);
+      return (sub && sub.reportsLeft > 0) || (p.reportsLeft && p.reportsLeft > 0);
+    });
+
+    if (!parcelWithReports) {
+      setReportsAvailable(false);
+      return;
+    }
+
     setIsGenerating(true);
+    
+    // Simulate report generation
     await new Promise((resolve) => setTimeout(resolve, 2000));
+    
+    // Decrement reports for the selected parcel
+    const decremented = decrementPropertyReports(parcelWithReports.id);
+    
+    // Update local state
+    if (decremented) {
+      setTotalReportsLeft((prev) => Math.max(0, prev - 1));
+    }
+    
     setIsGenerating(false);
     setReportGenerated(true);
   };
@@ -58,10 +102,32 @@ export default function ClaimsCard({ parcels }: ClaimsCardProps) {
                   {totalDamage.toLocaleString("ro-RO")} RON
                 </span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 text-sm">Rapoarte Disponibile</span>
+                <span className={`font-semibold ${totalReportsLeft > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {totalReportsLeft}
+                </span>
+              </div>
             </div>
 
             <div className="border-t border-slate-700 pt-4">
-              {reportGenerated ? (
+              {!reportsAvailable ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-red-400">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span className="font-medium text-sm">Nu mai ai rapoarte disponibile</span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Trebuie să îți reînnoiești abonamentul pentru a genera rapoarte noi.
+                  </p>
+                  <Link href="/dashboard/terenuri">
+                    <Button className="w-full bg-orange-600 hover:bg-orange-700">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Reînnoiește Abonamentul
+                    </Button>
+                  </Link>
+                </div>
+              ) : reportGenerated ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-green-500">
                     <CheckCircle className="h-5 w-5" />
@@ -109,3 +175,4 @@ export default function ClaimsCard({ parcels }: ClaimsCardProps) {
     </Card>
   );
 }
+
