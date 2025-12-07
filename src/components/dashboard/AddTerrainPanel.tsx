@@ -25,7 +25,7 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
-  existingPolygons?: [number, number][][][];
+  existingPolygons?: { coordinates: any; name: string }[];
 }
 
 const PolygonDrawMap = dynamic<PolygonDrawMapProps>(
@@ -511,11 +511,8 @@ export default function AddTerrainPanel({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Suprafață Calculată</span>
                 <span className="text-white font-medium">
-                  {area.toFixed(2)} ha
                 </span>
               </div>
-
-
             </div>
           )}
 
@@ -584,22 +581,28 @@ export default function AddTerrainPanel({
           onPolygonChange={handlePolygonChange}
           initialPolygon={cadastralFetched ? coordinates : undefined}
           existingPolygons={existingProperties.map((p) => {
-            if (!p.geometry || !p.geometry.coordinates || !p.geometry.coordinates[0]) return [];
-            // Basic heuristic: check if first point looks like [lng, lat] (lng ~ 20-30 for Ro, lat ~ 44-48)
-            // If coordinate[0] (lng candidate) < coordinate[1] (lat candidate) in Romania, it's likely [lng, lat]
-            // Actually, simply: Longitude in Romania is 20-30, Latitude 43-48.
-            // If p.geometry.coordinates[0][0][0] is < 40, it's likely Longitude.
-            // Leaflet expects [lat, lng].
+            if (
+              !p.geometry ||
+              !p.geometry.coordinates ||
+              !p.geometry.coordinates[0]
+            )
+              // Return empty coords but valid name to satisfy types, though map won't render empty coords
+              return { coordinates: [], name: p.name };
 
             const ring = p.geometry.coordinates[0];
+            let coords: any = ring;
+
             if (ring.length > 0) {
               const firstPoint = ring[0];
-              // If first component is < 40, it's longitude (20-30), second is latitude (40-48). We need [lat, lng].
+              // Heuristic: if first component < 40, likely [lng, lat], swap to [lat, lng]
               if (firstPoint[0] < 40) {
-                return [ring.map(c => [c[1], c[0]] as [number, number])];
+                coords = ring.map((c) => [c[1], c[0]]);
               }
             }
-            return [ring as [number, number][]];
+            return {
+              coordinates: [coords],
+              name: p.name,
+            };
           })}
         />
         {inputMode === "cadastral" && !cadastralFetched && (

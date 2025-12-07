@@ -7,6 +7,7 @@ import {
   Polygon,
   Marker,
   useMapEvents,
+  Tooltip,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -18,7 +19,7 @@ interface PolygonDrawMapProps {
     center: { lat: number; lng: number } | null
   ) => void;
   initialPolygon?: { lat: number; lng: number }[];
-  existingPolygons?: [number, number][][][];
+  existingPolygons?: { coordinates: any; name: string }[];
 }
 
 export type { PolygonDrawMapProps };
@@ -211,14 +212,15 @@ export default function PolygonDrawMap({
         />
 
         {/* Existing Polygons Layer */}
-        {existingPolygons.map((polygonCoords, index) => {
+        {existingPolygons.map((polygonData, index) => {
           // Flatten standard [lng, lat] arrays if needed, but assuming [lat, lng] for now
           // Strict validation to prevent crashing Leaflet
+          const polygonCoords = polygonData.coordinates;
           const isValid =
             Array.isArray(polygonCoords) &&
             polygonCoords.length > 0 &&
             Array.isArray(polygonCoords[0]) &&
-            polygonCoords[0].length > 0 &&
+            polygonCoords[0].length >= 3 && // Require at least 3 points to be a valid polygon
             // Check deep validity of first point (Arrays or Objects)
             ((Array.isArray(polygonCoords[0][0]) &&
               (typeof polygonCoords[0][0][0] === "number" ||
@@ -239,9 +241,19 @@ export default function PolygonDrawMap({
                 fillColor: "#059669",
                 fillOpacity: 0.4,
                 weight: 3,
-                interactive: false,
+                interactive: true, // Make sure it's interactive for tooltip
               }}
-            />
+            >
+              <Tooltip
+                sticky
+                direction="top"
+                offset={[0, -10]}
+                opacity={1}
+                className="custom-map-tooltip"
+              >
+                {polygonData.name}
+              </Tooltip>
+            </Polygon>
           );
         })}
 
