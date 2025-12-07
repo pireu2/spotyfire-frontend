@@ -257,6 +257,148 @@ export default function DashboardPage() {
       </div>
 
       <div className="w-80 space-y-4 overflow-y-auto">
+        {/* Reports Control Panel */}
+        <div className="bg-slate-800/80 backdrop-blur border border-slate-700 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <FileText className="h-4 w-4 text-green-500" />
+                Rapoarte
+              </h3>
+              {selectedParcel ? (
+                <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">
+                  {selectedParcel.activePackage || "Basic"} Plan
+                </p>
+              ) : (
+                activePackage && (
+                  <p className="text-[10px] text-slate-400 ml-6 uppercase tracking-wider">
+                    {activePackage} ("Global")
+                  </p>
+                )
+              )}
+            </div>
+            <span
+              className={`text-sm font-bold px-2 py-0.5 rounded ${
+                (selectedParcel ? selectedParcel.reportsLeft || 0 : credits) > 0
+                  ? "bg-green-500/20 text-green-400"
+                  : "bg-red-500/20 text-red-400"
+              }`}
+            >
+              {selectedParcel ? selectedParcel.reportsLeft || 0 : credits} /{" "}
+              {selectedParcel
+                ? selectedParcel.activePackage === "Pro"
+                  ? 15
+                  : selectedParcel.activePackage === "Enterprise"
+                  ? 30
+                  : 5
+                : totalReports > 0
+                ? totalReports
+                : "-"}
+            </span>
+          </div>
+
+          <Button
+            onClick={() => {
+              if (selectedParcel) {
+                if ((selectedParcel.reportsLeft || 0) > 0) {
+                  addReport(
+                    `Raport: ${selectedParcel.name}`,
+                    `Analiză detaliată pentru terenul ${selectedParcel.name} (${selectedParcel.area} ha). Status curent: ${selectedParcel.status}.`
+                  );
+
+                  // Update local state for immediate feedback
+                  setParcels((prev) =>
+                    prev.map((p) =>
+                      p.id === selectedParcel.id
+                        ? { ...p, reportsLeft: (p.reportsLeft || 0) - 1 }
+                        : p
+                    )
+                  );
+                  setSelectedParcel((prev) =>
+                    prev
+                      ? { ...prev, reportsLeft: (prev.reportsLeft || 0) - 1 }
+                      : null
+                  );
+                } else {
+                  alert(
+                    `Nu mai ai rapoarte disponibile pentru acest teren (${selectedParcel.name}).`
+                  );
+                  router.push("/dashboard/aboneaza-te"); // Use standard route
+                }
+              } else {
+                // Global fallback (legacy or if logic requires it)
+                if (credits > 0) {
+                  alert(
+                    "Vă rugăm selectați un teren de pe hartă pentru a genera raportul."
+                  );
+                } else {
+                  alert("Nu mai ai rapoarte disponibile.");
+                  router.push("/aboneaza-te");
+                }
+              }
+            }}
+            className={`w-full text-white mb-4 transition-all duration-200 ${
+              selectedParcel
+                ? "bg-green-600 hover:bg-green-700 shadow-lg shadow-green-900/20"
+                : "bg-slate-700 hover:bg-slate-600"
+            }`}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {selectedParcel
+              ? "Generează Raport Teren"
+              : "Cere raport (Selectează teren)"}
+          </Button>
+
+          {/* Simulate Automated Report to test logic */}
+          <Button
+            onClick={() => {
+              if (credits > 0) {
+                generateAutomatedReport(
+                  "Alertă Automată Incendiu",
+                  "Detectat incendiu în Sectorul 4."
+                );
+              } else {
+                alert(
+                  "Nu mai ai rapoarte disponibile pentru procesare automată."
+                );
+                router.push("/aboneaza-te");
+              }
+            }}
+            variant="outline"
+            className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 text-xs mb-4"
+          >
+            Simulează Alertă (Auto)
+          </Button>
+
+          <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+            {reports.length === 0 ? (
+              <p className="text-xs text-slate-500 text-center py-2">
+                Nu există rapoarte generate.
+              </p>
+            ) : (
+              reports.map((report) => (
+                <div
+                  key={report.id}
+                  className="bg-slate-900/50 p-2 rounded border border-slate-700/50"
+                >
+                  <p className="text-xs text-slate-300 font-medium truncate">
+                    {report.title}
+                  </p>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-[10px] text-slate-500">
+                      {report.type === "automated" ? "Automat" : "Manual"}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {new Date(report.date).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         <HealthStats data={mockNDVIData} currentNDVI={currentNDVI} />
         <AlertsPanel alerts={alerts} />
         <ClaimsCard parcels={parcels} />
